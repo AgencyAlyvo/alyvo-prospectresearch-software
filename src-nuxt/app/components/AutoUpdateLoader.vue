@@ -2,7 +2,7 @@
   <span class="loader"></span>
 </template>
 
-<style lang="scss" scoped>
+<style scoped>
 .loader {
   transform: rotateZ(45deg);
   perspective: 1000px;

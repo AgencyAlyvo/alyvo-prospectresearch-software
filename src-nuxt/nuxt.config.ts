@@ -26,13 +26,15 @@ export default defineNuxtConfig({
     '#src-core': fileURLToPath(new URL('../src-core', import.meta.url)),
   },
   css: ['~/assets/css/tailwind.css'],
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   telemetry: false,
   components: true,
   runtimeConfig: {
     apiSecret: '', // can be overridden by NUXT_API_SECRET environment variable
     public: {
       apiBase: '', // can be overridden by NUXT_PUBLIC_API_BASE environment variable
+      appEnv: process.env.NUXT_PUBLIC_NODE_ENV || 'development',
+      apiBaseUrl: process.env.NUXT_PUBLIC_BASE_URL_API || '',
     },
   },
   typescript: {
