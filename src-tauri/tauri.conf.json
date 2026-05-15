@@ -34,7 +34,7 @@
         "connect-src": [
           "ipc:",
           "http://ipc.localhost",
-          "https://staging.api.alyvo.fr",
+          "https://staging.api.prospectresearch.alyvo.fr",
           "https://api.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
           "https://*.s3.gra.io.cloud.ovh.net"
@@ -47,7 +47,7 @@
           "http://asset.localhost",
           "data:",
           "blob:",
-          "https://staging.api.alyvo.fr",
+          "https://staging.api.prospectresearch.alyvo.fr",
           "https://api.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
           "https://*.s3.gra.io.cloud.ovh.net"
@@ -59,8 +59,8 @@
           "http://asset.localhost",
           "data:",
           "blob:",
-          "https://staging.api.alyvo.fr",
-          "https://api.alyvo.fr",
+          "https://staging.api.prospectresearch.alyvo.fr",
+          "https://api.prospectresearch.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
           "https://*.s3.gra.io.cloud.ovh.net"
 
@@ -129,7 +129,7 @@
       "files": {},
       "hardenedRuntime": true,
       "entitlements": null,
-      "exceptionDomain": "staging.api.alyvo.fr api.alyvo.fr",
+      "exceptionDomain": "staging.api.prospectresearch.alyvo.fr api.prospectresearch.alyvo.fr",
       "frameworks": [],
       "providerShortName": null,
       "signingIdentity": null,
@@ -154,7 +154,7 @@
         "installMode": "passive"
       },
       "active": true,
-      "endpoints": ["https://api.prospectresearch.alyvo.fr/prospectresearch/prod/software/updater/{{target}}/{{arch}}/{{current_version}}"],
+      "endpoints": ["https://api.prospectresearch.alyvo.fr/software/updater/{{target}}/{{arch}}/{{current_version}}"],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5NjU0QjdDQTI1Njk4MDYKUldRR21GYWlmRXRsR2Faekh4WGJSeVR4czJkTFZFSzI0enVtaGxxc2dNWm9yZG1nN0ZIU2Q3NXQK",
       "dangerousInsecureTransportProtocol": false
