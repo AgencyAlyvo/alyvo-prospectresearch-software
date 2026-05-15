@@ -35,7 +35,7 @@
           "ipc:",
           "http://ipc.localhost",
           "https://staging.api.prospectresearch.alyvo.fr",
-          "https://api.alyvo.fr",
+          "https://api.prospectresearch.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
           "https://*.s3.gra.io.cloud.ovh.net"
         ],
@@ -48,7 +48,7 @@
           "data:",
           "blob:",
           "https://staging.api.prospectresearch.alyvo.fr",
-          "https://api.alyvo.fr",
+          "https://api.prospectresearch.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
           "https://*.s3.gra.io.cloud.ovh.net"
 
