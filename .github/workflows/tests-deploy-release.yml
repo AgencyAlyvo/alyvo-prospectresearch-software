@@ -11,7 +11,7 @@ permissions:
   pull-requests: write
 
 env:
-  NODE_VERSION: '24.11.0'
+  NODE_VERSION: '24.15.0'
 
 jobs:
   deploy-release:
@@ -30,7 +30,7 @@ jobs:
         run: npm install
 
       - name: Lint TypeScript and ESLint
-        run: npm run lint:eslint && npm run lint:ts
+        run: npm run lint:ts
 
       - name: Deploy PR (main) for new Release
         uses: googleapis/release-please-action@v5

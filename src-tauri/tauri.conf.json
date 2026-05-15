@@ -1,9 +1,9 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "CrzGames Launcher",
-  "mainBinaryName": "CrzGamesLauncher",
+  "productName": "Alyvo ProspectResearch",
+  "mainBinaryName": "AlyvoProspectResearch",
   "version": "0.0.0",
-  "identifier": "com.crzgames.launcher",
+  "identifier": "fr.alyvo.prospectresearch",
   "build": {
     "frontendDist": "../src-nuxt/.output/public/",
     "devUrl": "http://localhost:1470",
@@ -17,7 +17,7 @@
         "width": 800,
         "height": 600,
         "resizable": true,
-        "title": "CrzGames Launcher",
+        "title": "Alyvo ProspectResearch",
         "decorations": true,
         "center": true,
         "alwaysOnTop": false,
@@ -34,14 +34,10 @@
         "connect-src": [
           "ipc:",
           "http://ipc.localhost",
-          "https://staging.api.crzgames.com",
-          "https://api.crzgames.com",
-          "https://s3.de.io.cloud.ovh.net",
-          "https://*.s3.de.io.cloud.ovh.net",
-          "http://127.0.0.1:3333",
-          "http://localhost:3556",
-          "http://localhost:9000",
-          "http://127.0.0.1:9000"
+          "https://staging.api.alyvo.fr",
+          "https://api.alyvo.fr",
+          "https://s3.gra.io.cloud.ovh.net",
+          "https://*.s3.gra.io.cloud.ovh.net"
         ],
         "script-src": "'self'",
         "style-src": "'self' 'unsafe-inline'",
@@ -51,12 +47,11 @@
           "http://asset.localhost",
           "data:",
           "blob:",
-          "https://staging.api.crzgames.com",
-          "https://api.crzgames.com",
-          "https://s3.de.io.cloud.ovh.net",
-          "https://*.s3.de.io.cloud.ovh.net",
-          "http://localhost:9000",
-          "http://127.0.0.1:9000"
+          "https://staging.api.alyvo.fr",
+          "https://api.alyvo.fr",
+          "https://s3.gra.io.cloud.ovh.net",
+          "https://*.s3.gra.io.cloud.ovh.net"
+
         ],
         "media-src": [
           "'self'",
@@ -64,12 +59,11 @@
           "http://asset.localhost",
           "data:",
           "blob:",
-          "https://staging.api.crzgames.com",
-          "https://api.crzgames.com",
-          "https://s3.de.io.cloud.ovh.net",
-          "https://*.s3.de.io.cloud.ovh.net",
-          "http://localhost:9000",
-          "http://127.0.0.1:9000"
+          "https://staging.api.alyvo.fr",
+          "https://api.alyvo.fr",
+          "https://s3.gra.io.cloud.ovh.net",
+          "https://*.s3.gra.io.cloud.ovh.net"
+
         ],
         "font-src": "'self'",
         "object-src": "'none'",
@@ -94,10 +88,10 @@
   "bundle": {
     "createUpdaterArtifacts": true,
     "active": true,
-    "category": "Games",
-    "copyright": "DEV-ALL",
-    "longDescription": "CrzGames Launcher is a desktop application that allows you to download and play games from CrzGames.",
-    "shortDescription": "CrzGames Launcher is a desktop application that allows you to download and play games from CrzGames.",
+    "category": "Business",
+    "copyright": "Alyvo",
+    "longDescription": "Alyvo Prospect Research is a desktop application that allows you to prospect automatically.",
+    "shortDescription": "Alyvo Prospect Research is a desktop application that allows you to prospect automatically.",
     "license": "Proprietary",
     "licenseFile": "./legal/LICENSE.txt",
     "targets": "all",
@@ -110,11 +104,11 @@
       "icons/icon.ico",
       "icons/icon.png"
     ],
-    "publisher": "DEV-ALL",
+    "publisher": "Alyvo",
     "resources": [],
     "externalBin": [],
     "fileAssociations": [],
-    "homepage": "https://crzgames.com",
+    "homepage": "https://alyvo.fr",
     "useLocalToolsDir": false,
     "linux": {
       "appimage": {
@@ -135,7 +129,7 @@
       "files": {},
       "hardenedRuntime": true,
       "entitlements": null,
-      "exceptionDomain": "127.0.0.1 localhost staging.api.crzgames.com api.crzgames.com s3.de.io.cloud.ovh.net crzgames.s3.de.io.cloud.ovh.net",
+      "exceptionDomain": "staging.api.alyvo.fr api.alyvo.fr",
       "frameworks": [],
       "providerShortName": null,
       "signingIdentity": null,
@@ -160,7 +154,7 @@
         "installMode": "passive"
       },
       "active": true,
-      "endpoints": ["https://api.crzgames.com/launcher/updater-manifest/{{target}}/{{arch}}/{{current_version}}"],
+      "endpoints": ["https://api.prospectresearch.alyvo.fr/prospectresearch/prod/software/updater/{{target}}/{{arch}}/{{current_version}}"],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDE5NjU0QjdDQTI1Njk4MDYKUldRR21GYWlmRXRsR2Faekh4WGJSeVR4czJkTFZFSzI0enVtaGxxc2dNWm9yZG1nN0ZIU2Q3NXQK",
       "dangerousInsecureTransportProtocol": false

@@ -1,5 +1,5 @@
 [package]
-name = "alyvo_project_client"
+name = "alyvo_prospectresearch"
 version = "0.0.0"
 description = ""
 authors = ["corentin recanzone"]
@@ -13,7 +13,7 @@ rust-version = "1.95.0"
 # The `_lib` suffix may seem redundant but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "tauri_app_lib"
+name = "alyvo_prospectresearch_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -25,9 +25,12 @@ tauri-plugin-opener = "2.5.4"
 tauri-plugin-fs = "2.5.1"
 tauri-plugin-dialog = "2.7.1"
 tauri-plugin-notification = "2.3.3"
-tauri-plugin-os = "2"
+tauri-plugin-os = "2.3.2"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2.10.1"
 
 # Server development
 [profile.dev]
@@ -41,6 +44,3 @@ codegen-units = 1 # Compiler les crates l'une après l'autre pour que le compila
 lto = true        # Active les optimisations de link
 opt-level = "s"   # Optimiser la taille du binaire
 strip = true      # Supprimer automatiquement les symboles du binaire.
-
-[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
-tauri-plugin-updater = "2"
