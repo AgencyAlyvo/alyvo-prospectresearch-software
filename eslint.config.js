@@ -7,7 +7,6 @@ import eslintPluginUnusedImports from 'eslint-plugin-unused-imports'
 import eslintPluginVue from 'eslint-plugin-vue'
 import eslintParserVue from 'vue-eslint-parser'
 import eslintParserTypeScript from '@typescript-eslint/parser'
-import eslintPluginCypress from 'eslint-plugin-cypress'
 
 // Configuration principale
 const mainConfig = {
@@ -43,7 +42,6 @@ const mainConfig = {
     'eslint-plugin-jsdoc': eslintPluginJSDoc,
     '@stylistic-eslint-plugin': eslintPluginStylistic,
     'eslint-plugin-vue': eslintPluginVue,
-    'eslint-plugin-cypress': eslintPluginCypress,
   },
   rules: {
     /**

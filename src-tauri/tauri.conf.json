@@ -51,7 +51,6 @@
           "https://api.prospectresearch.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
           "https://*.s3.gra.io.cloud.ovh.net"
-
         ],
         "media-src": [
           "'self'",
@@ -63,7 +62,6 @@
           "https://api.prospectresearch.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
           "https://*.s3.gra.io.cloud.ovh.net"
-
         ],
         "font-src": "'self'",
         "object-src": "'none'",
