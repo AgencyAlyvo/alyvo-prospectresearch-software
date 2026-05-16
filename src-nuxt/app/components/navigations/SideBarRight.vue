@@ -1,7 +1,7 @@
 <template>
   <div
     id="sidebar-right"
-    class="fixed right-0 z-10 flex flex-col items-center justify-start overflow-hidden py-4 text-white transition-all duration-300"
+    class="fixed right-0 z-10 flex flex-col items-center justify-start overflow-hidden py-4 text-white transition-[width] duration-300"
     :class="menuIsExpanded ? 'w-[240px]' : 'w-[64px]'"
     style="
       height: calc(100vh - 36px);

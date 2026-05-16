@@ -60,9 +60,7 @@ const appWindow: TauriWindow = getCurrentWindow()
 const route: ReturnType<typeof useRoute> = useRoute()
 
 // Vrai sur les pages d'authentification où le bouton maximize ne doit pas apparaître.
-const isAuthRoute: ComputedRef<boolean> = computed(
-  (): boolean => route.path === '/login' || route.path === '/signup',
-)
+const isAuthRoute: ComputedRef<boolean> = computed((): boolean => route.path === '/login' || route.path === '/signup')
 
 /**
  * Minimise la fenetre.
