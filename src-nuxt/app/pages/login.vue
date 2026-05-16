@@ -233,7 +233,14 @@ const signIn: () => Promise<void> = async (): Promise<void> => {
     await navigateTo('/home')
   } catch (error: unknown) {
     console.error('SignIn error:', error)
-    errorMessage.value = 'Connexion échouée. Vérifiez votre email et mot de passe.'
+
+    // Erreur réseau (backend inaccessible) : pas de status HTTP, TypeError ou fetch failed.
+    const fetchError = error as { status?: number }
+    if (!fetchError.status) {
+      errorMessage.value = 'Service indisponible. Vérifiez votre connexion ou réessayez plus tard.'
+    } else {
+      errorMessage.value = 'Connexion échouée. Vérifiez votre email et mot de passe.'
+    }
   } finally {
     buttonLoading.value = false
     windowTransitionStore.setLoading(false)
