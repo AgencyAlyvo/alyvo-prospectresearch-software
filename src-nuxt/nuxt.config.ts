@@ -28,7 +28,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/tailwind.css', '~/assets/css/main.scss'],
   devtools: { enabled: true },
   telemetry: false,
-  components: true,
+  components: {
+    dirs: [{ path: '~/components', pathPrefix: false }],
+  },
   runtimeConfig: {
     apiSecret: '', // can be overridden by NUXT_API_SECRET environment variable
     public: {
@@ -50,7 +52,7 @@ export default defineNuxtConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  modules: ['@pinia/nuxt', '@nuxtjs/google-fonts'],
+  modules: ['@pinia/nuxt', '@nuxtjs/google-fonts', '@nuxt/ui'],
   pinia: {
     storesDirs: ['~/stores/**'],
   },

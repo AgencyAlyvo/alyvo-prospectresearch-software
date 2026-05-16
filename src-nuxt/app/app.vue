@@ -1,18 +1,20 @@
 <template>
-  <div>
-    <Transition name="fade">
-      <div
-        v-if="windowTransitionStore.isLoading"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-[#060b12]"
-      >
-        <WindowTransitionLoader />
-      </div>
-    </Transition>
+  <UApp>
+    <div>
+      <Transition name="fade">
+        <div
+          v-if="windowTransitionStore.isLoading"
+          class="fixed inset-0 z-50 flex items-center justify-center bg-[#060b12]"
+        >
+          <WindowTransitionLoader />
+        </div>
+      </Transition>
 
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
-  </div>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+    </div>
+  </UApp>
 </template>
 
 <script lang="ts" setup>

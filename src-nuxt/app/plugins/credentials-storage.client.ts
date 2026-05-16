@@ -5,7 +5,7 @@ import { CredentialsStorageService } from '#src-core/services/CredentialsStorage
  * Doit s'exécuter avant tout appel au service (login, auto-login).
  */
 export default defineNuxtPlugin((): void => {
-  const runtimeConfig = useRuntimeConfig()
+  const runtimeConfig: ReturnType<typeof useRuntimeConfig> = useRuntimeConfig()
 
   // Injecte l'identifiant issu de NUXT_PUBLIC_APP_IDENTIFIER pour déterminer
   // le sous-dossier de stockage des credentials selon l'environnement.

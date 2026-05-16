@@ -195,6 +195,9 @@ const isFormInvalid: ComputedRef<boolean> = computed((): boolean => {
 })
 
 // Supprime le fichier d'identifiants si l'utilisateur décoche "Rester connecté".
+/**
+ *
+ */
 const onStayLoggedInChange: () => Promise<void> = async (): Promise<void> => {
   if (!stayLoggedIn.value) {
     await CredentialsStorageService.clear()
@@ -202,6 +205,9 @@ const onStayLoggedInChange: () => Promise<void> = async (): Promise<void> => {
 }
 
 // Persiste les identifiants dans AppData si "Rester connecté" est coché, sinon supprime le fichier.
+/**
+ *
+ */
 const saveCredentialsIfNeeded: () => Promise<void> = async (): Promise<void> => {
   if (stayLoggedIn.value) {
     await CredentialsStorageService.save(credentials.value.email, credentials.value.password)
@@ -212,6 +218,9 @@ const saveCredentialsIfNeeded: () => Promise<void> = async (): Promise<void> => 
 }
 
 // Connecte l'utilisateur puis redirige vers la page principale si l'API valide les identifiants.
+/**
+ *
+ */
 const signIn: () => Promise<void> = async (): Promise<void> => {
   // Empêche une soumission concurrente ou avec un formulaire invalide.
   if (buttonLoading.value || isFormInvalid.value) {
@@ -235,7 +244,7 @@ const signIn: () => Promise<void> = async (): Promise<void> => {
     console.error('SignIn error:', error)
 
     // Erreur réseau (backend inaccessible) : pas de status HTTP, TypeError ou fetch failed.
-    const fetchError = error as { status?: number }
+    const fetchError: { status?: number } = error as { status?: number }
     if (!fetchError.status) {
       errorMessage.value = 'Service indisponible. Vérifiez votre connexion ou réessayez plus tard.'
     } else {
@@ -251,6 +260,9 @@ const signIn: () => Promise<void> = async (): Promise<void> => {
 const authInternalNav: Ref<boolean> = useState('auth-internal-nav', (): boolean => false)
 
 // Marque la navigation comme interne avant d'aller sur la page signup.
+/**
+ *
+ */
 const goToSignUp: () => void = (): void => {
   authInternalNav.value = true
   navigateTo('/signup')
@@ -267,7 +279,7 @@ onMounted(async (): Promise<void> => {
   windowTransitionStore.setLoading(false)
 
   // Charge les identifiants depuis AppData et pré-remplit le formulaire.
-  const stored = await CredentialsStorageService.load()
+  const stored: Awaited<ReturnType<typeof CredentialsStorageService.load>> = await CredentialsStorageService.load()
 
   if (stored) {
     credentials.value = { email: stored.email, password: stored.password }

@@ -2,12 +2,7 @@
   <div class="flex h-screen flex-col bg-[#1e293b]">
     <!-- Barre de fenêtre Tauri avec le logo Alyvo centré. -->
     <WindowBar>
-      <img
-        class="h-5 select-none"
-        src="/logo-alyvo.png"
-        alt="Alyvo"
-        draggable="false"
-      />
+      <img class="h-5 select-none" src="/logo-alyvo.png" alt="Alyvo" draggable="false" />
     </WindowBar>
 
     <main class="flex h-full flex-1 overflow-hidden">
@@ -17,9 +12,9 @@
       <div
         class="flex-grow overflow-x-hidden overflow-y-auto transition-all duration-300"
         :class="{
-          'ml-[64px] mr-[64px]': windowWidth < 1280,
-          'ml-[240px] mr-[64px]': windowWidth >= 1280 && windowWidth < 1536,
-          'ml-[240px] mr-[240px]': windowWidth >= 1536,
+          'mr-[64px] ml-[64px]': windowWidth < 1280,
+          'mr-[64px] ml-[240px]': windowWidth >= 1280 && windowWidth < 1536,
+          'mr-[240px] ml-[240px]': windowWidth >= 1536,
         }"
       >
         <slot />
@@ -40,6 +35,9 @@ import SideBarRight from '#src-nuxt/app/components/navigations/SideBarRight.vue'
 // Largeur courante de la fenêtre pour adapter les marges du contenu central.
 const windowWidth: Ref<number> = ref(window.innerWidth)
 
+/**
+ *
+ */
 const handleResize: () => void = (): void => {
   windowWidth.value = window.innerWidth
 }

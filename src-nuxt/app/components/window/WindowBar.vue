@@ -2,77 +2,48 @@
   <div class="relative flex h-9 items-center justify-between bg-black text-center select-none" data-tauri-drag-region>
     <div class="w-[96px]"></div>
 
-    <div class="absolute left-1/2 flex h-full -translate-x-1/2 items-center justify-center pointer-events-none" data-tauri-drag-region>
+    <!-- Slot centré pour le contenu (logo sur /home). pointer-events-none pour laisser le drag fonctionner. -->
+    <div
+      class="pointer-events-none absolute left-1/2 flex h-full -translate-x-1/2 items-center justify-center"
+      data-tauri-drag-region
+    >
       <slot></slot>
     </div>
 
+    <!-- Boutons de contrôle de la fenêtre. -->
     <div class="flex h-full flex-shrink-0 items-center space-x-1">
       <!-- Bouton de minimisation. -->
       <button
         id="titlebar-minimize"
-        class="titlebar-button flex h-full w-8 items-center justify-center hover:bg-gray-800"
+        class="titlebar-button flex h-full w-8 items-center justify-center text-[#85868a] hover:bg-gray-800 hover:text-white"
         type="button"
         aria-label="Minimiser"
         @click="btnMinimizeWindow"
       >
-        <svg
-          width="17"
-          height="17"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#85868a"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
+        <UIcon name="i-heroicons-minus" class="h-[17px] w-[17px]" />
       </button>
 
       <!-- Bouton de maximisation, masqué sur les pages login et signup. -->
       <button
         v-if="!isAuthRoute"
         id="titlebar-maximize"
-        class="titlebar-button flex h-full w-8 items-center justify-center hover:bg-gray-800"
+        class="titlebar-button flex h-full w-8 items-center justify-center text-[#85868a] hover:bg-gray-800 hover:text-white"
         type="button"
         aria-label="Agrandir"
         @click="btnMaximizeWindow"
       >
-        <svg
-          width="13"
-          height="13"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#85868a"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect x="3" y="3" width="18" height="18" rx="1" />
-        </svg>
+        <UIcon name="i-heroicons-stop" class="h-[13px] w-[13px]" />
       </button>
 
       <!-- Bouton de fermeture. -->
       <button
         id="titlebar-close"
-        class="titlebar-button ml-1 flex h-full w-8 items-center justify-center hover:bg-gray-800"
+        class="titlebar-button ml-1 flex h-full w-8 items-center justify-center text-[#85868a] hover:bg-gray-800 hover:text-white"
         type="button"
         aria-label="Fermer"
         @click="btnCloseWindow"
       >
-        <svg
-          width="17"
-          height="17"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#85868a"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
+        <UIcon name="i-heroicons-x-mark" class="h-[17px] w-[17px]" />
       </button>
     </div>
   </div>
@@ -111,11 +82,3 @@ const btnMaximizeWindow: () => Promise<void> = (): Promise<void> => appWindow.to
  */
 const btnCloseWindow: () => Promise<void> = (): Promise<void> => appWindow.hide()
 </script>
-
-<style scoped>
-#titlebar-minimize:hover svg,
-#titlebar-maximize:hover svg,
-#titlebar-close:hover svg {
-  stroke: #fff;
-}
-</style>
