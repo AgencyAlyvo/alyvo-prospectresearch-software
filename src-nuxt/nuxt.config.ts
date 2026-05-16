@@ -25,7 +25,7 @@ export default defineNuxtConfig({
     '#src-nuxt': fileURLToPath(new URL('.', import.meta.url)),
     '#src-core': fileURLToPath(new URL('../src-core', import.meta.url)),
   },
-  css: ['~/assets/css/tailwind.css'],
+  css: ['~/assets/css/tailwind.css', '~/assets/css/main.scss'],
   devtools: { enabled: false },
   telemetry: false,
   components: true,
@@ -56,7 +56,7 @@ export default defineNuxtConfig({
   },
   googleFonts: {
     families: {
-      Poppins: [400, 500, 600, 700, 800],
+      Manrope: [400, 500, 600, 700, 800],
     },
   },
 })

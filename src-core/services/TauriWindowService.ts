@@ -10,6 +10,7 @@ export type TauriWindowConfiguration = {
   minHeight?: number
   width?: number
   height?: number
+  center?: boolean
   resizable: boolean
   decorations: boolean
   maximized: boolean
@@ -30,22 +31,46 @@ export class TauriWindowService {
     await appWindow.setDecorations(configuration.decorations)
     await appWindow.setResizable(configuration.resizable)
 
-    if (configuration.minWidth && configuration.minHeight) {
-      await appWindow.setMinSize(new LogicalSize(configuration.minWidth, configuration.minHeight))
-    }
+    const minSize: LogicalSize | null =
+      configuration.minWidth && configuration.minHeight
+        ? new LogicalSize(configuration.minWidth, configuration.minHeight)
+        : null
+    await appWindow.setMinSize(minSize)
 
     if (configuration.width && configuration.height) {
       await appWindow.setSize(new LogicalSize(configuration.width, configuration.height))
-      await appWindow.center()
+
+      // Centre la fenêtre uniquement si explicitement demandé (pas lors d'une navigation interne auth).
+      if (configuration.center !== false) {
+        await appWindow.center()
+      }
     }
 
     if (configuration.maximized) {
       await appWindow.maximize()
+    } else if (await appWindow.isMaximized()) {
+      await appWindow.unmaximize()
     }
   }
 
   /**
-   * Configure la fenetre principale apres l'ecran d'auto-update.
+   * Configure la fenetre pour la page de connexion.
+   * @param {boolean} center - Centre la fenetre si true, conserve sa position sinon.
+   * @returns {Promise<void>}
+   */
+  public static async configureLoginWindow(center: boolean = true): Promise<void> {
+    await this.configureCurrentWindow({
+      width: 400,
+      height: 595,
+      center,
+      resizable: false,
+      decorations: false,
+      maximized: false,
+    })
+  }
+
+  /**
+   * Configure la fenetre principale apres connexion.
    * @returns {Promise<void>}
    */
   public static async configureMainWindow(): Promise<void> {

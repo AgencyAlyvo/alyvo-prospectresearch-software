@@ -50,15 +50,15 @@ let downloadedUpdateBytes: number = 0
 
 /* METHODS */
 /**
- * Configure la fenetre puis redirige vers la page principale.
+ * Configure la fenetre puis redirige vers la page de connexion.
  * @returns {Promise<void>}
  */
-const goToHome: () => Promise<void> = async (): Promise<void> => {
+const goToLogin: () => Promise<void> = async (): Promise<void> => {
   windowTransitionStore.setLoading(true)
 
   try {
-    await TauriWindowService.configureMainWindow()
-    await navigateTo('/home')
+    await TauriWindowService.configureLoginWindow()
+    await navigateTo('/login')
   } finally {
     windowTransitionStore.setLoading(false)
   }
@@ -113,7 +113,7 @@ const updateDownloadProgressPercentage: (progressPercentage: number) => void = (
 const autoUpdateApplication: () => Promise<void> = async (): Promise<void> => {
   if (appEnv === 'development') {
     updateStatus.value = 'Development mode.'
-    await goToHome()
+    await goToLogin()
     return
   }
 
@@ -130,7 +130,7 @@ const autoUpdateApplication: () => Promise<void> = async (): Promise<void> => {
     }
 
     updateStatus.value = 'Application already up to date.'
-    await goToHome()
+    await goToLogin()
   } catch (error) {
     console.error('Update error:', error)
     updateStatus.value = 'Error checking for updates.'
