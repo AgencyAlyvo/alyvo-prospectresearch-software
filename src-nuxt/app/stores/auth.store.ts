@@ -10,6 +10,7 @@ import type { SignInResponse, SignUpResponse } from '#src-core/types/response/au
  */
 type AuthStore = {
   authToken: string | undefined
+  userEmail: string | undefined
   isAuthenticated: boolean
   restoreSession: () => void
   signIn: (credentials: LoginPayload) => Promise<void>
@@ -22,6 +23,7 @@ type AuthStore = {
  */
 type AuthStoreSetup = {
   authToken: Ref<string | undefined>
+  userEmail: Ref<string | undefined>
   isAuthenticated: Ref<boolean>
   restoreSession: () => void
   signIn: (credentials: LoginPayload) => Promise<void>
@@ -35,12 +37,14 @@ type AuthStoreSetup = {
 type UseAuthStore = () => AuthStore
 
 /**
- * Cle localStorage du token auth.
+ * Cles localStorage pour le token et l'email de l'utilisateur connecte.
  */
 const AUTH_TOKEN_STORAGE_KEY: string = 'alyvo_auth_token'
+const AUTH_EMAIL_STORAGE_KEY: string = 'alyvo_auth_email'
 
 export const useAuthStore: UseAuthStore = defineStore('auth', (): AuthStoreSetup => {
   const authToken: Ref<string | undefined> = ref(undefined)
+  const userEmail: Ref<string | undefined> = ref(undefined)
   const isAuthenticated: Ref<boolean> = ref(false)
 
   /**
@@ -68,6 +72,19 @@ export const useAuthStore: UseAuthStore = defineStore('auth', (): AuthStoreSetup
   }
 
   /**
+   * Persiste l'email de l'utilisateur localement apres connexion ou inscription.
+   * @param {string} email - Email saisi dans le formulaire.
+   * @returns {void}
+   */
+  const applyUserEmail: (email: string) => void = (email: string): void => {
+    userEmail.value = email
+
+    if (import.meta.client) {
+      localStorage.setItem(AUTH_EMAIL_STORAGE_KEY, email)
+    }
+  }
+
+  /**
    * Recharge la session locale.
    * @returns {void}
    */
@@ -77,33 +94,37 @@ export const useAuthStore: UseAuthStore = defineStore('auth', (): AuthStoreSetup
     }
 
     const storedToken: string | null = localStorage.getItem(AUTH_TOKEN_STORAGE_KEY)
+    const storedEmail: string | null = localStorage.getItem(AUTH_EMAIL_STORAGE_KEY)
 
     authToken.value = storedToken || undefined
+    userEmail.value = storedEmail || undefined
     isAuthenticated.value = !!storedToken
   }
 
   /**
-   * Connecte l'utilisateur via l'API puis stocke le token localement.
+   * Connecte l'utilisateur via l'API puis stocke le token et l'email localement.
    * @param {LoginPayload} credentials - Identifiants de connexion.
    * @returns {Promise<void>}
    */
   const signIn: (credentials: LoginPayload) => Promise<void> = async (credentials: LoginPayload): Promise<void> => {
     const response: SignInResponse = await AuthApiService.signIn(credentials)
     applyAuthTokenResponse(response, 'signin')
+    applyUserEmail(credentials.email)
   }
 
   /**
-   * Inscrit l'utilisateur via l'API puis stocke le token localement.
+   * Inscrit l'utilisateur via l'API puis stocke le token et l'email localement.
    * @param {SignUpPayload} credentials - Identifiants d'inscription.
    * @returns {Promise<void>}
    */
   const signUp: (credentials: SignUpPayload) => Promise<void> = async (credentials: SignUpPayload): Promise<void> => {
     const response: SignUpResponse = await AuthApiService.signUp(credentials)
     applyAuthTokenResponse(response, 'signup')
+    applyUserEmail(credentials.email)
   }
 
   /**
-   * Deconnecte l'utilisateur cote API puis efface le token localement.
+   * Deconnecte l'utilisateur cote API puis efface le token et l'email localement.
    * @returns {Promise<void>}
    */
   const signOut: () => Promise<void> = async (): Promise<void> => {
@@ -117,10 +138,12 @@ export const useAuthStore: UseAuthStore = defineStore('auth', (): AuthStoreSetup
       console.error('SignOut error:', error)
     } finally {
       authToken.value = undefined
+      userEmail.value = undefined
       isAuthenticated.value = false
 
       if (import.meta.client) {
         localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
+        localStorage.removeItem(AUTH_EMAIL_STORAGE_KEY)
       }
     }
   }
@@ -129,6 +152,7 @@ export const useAuthStore: UseAuthStore = defineStore('auth', (): AuthStoreSetup
 
   return {
     authToken,
+    userEmail,
     isAuthenticated,
     restoreSession,
     signIn,

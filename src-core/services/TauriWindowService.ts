@@ -80,7 +80,7 @@ export class TauriWindowService {
       width: 1280,
       height: 720,
       resizable: true,
-      decorations: true,
+      decorations: false,
       maximized: true,
     })
   }

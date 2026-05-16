@@ -1,0 +1,55 @@
+<template>
+  <div class="flex h-screen flex-col bg-[#1e293b]">
+    <!-- Barre de fenêtre Tauri avec le logo Alyvo centré. -->
+    <WindowBar>
+      <img
+        class="h-5 select-none"
+        src="/logo-alyvo.png"
+        alt="Alyvo"
+        draggable="false"
+      />
+    </WindowBar>
+
+    <main class="flex h-full flex-1 overflow-hidden">
+      <SideBarLeft />
+
+      <!-- Zone de contenu centrale, marges ajustées selon la largeur de la fenêtre. -->
+      <div
+        class="flex-grow overflow-x-hidden overflow-y-auto transition-all duration-300"
+        :class="{
+          'ml-[64px] mr-[64px]': windowWidth < 1280,
+          'ml-[240px] mr-[64px]': windowWidth >= 1280 && windowWidth < 1536,
+          'ml-[240px] mr-[240px]': windowWidth >= 1536,
+        }"
+      >
+        <slot />
+      </div>
+
+      <SideBarRight />
+    </main>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { onMounted, onUnmounted, ref } from 'vue'
+import type { Ref } from 'vue'
+
+import SideBarLeft from '#src-nuxt/app/components/navigations/SideBarLeft.vue'
+import SideBarRight from '#src-nuxt/app/components/navigations/SideBarRight.vue'
+
+// Largeur courante de la fenêtre pour adapter les marges du contenu central.
+const windowWidth: Ref<number> = ref(window.innerWidth)
+
+const handleResize: () => void = (): void => {
+  windowWidth.value = window.innerWidth
+}
+
+onMounted((): void => {
+  windowWidth.value = window.innerWidth
+  window.addEventListener('resize', handleResize)
+})
+
+onUnmounted((): void => {
+  window.removeEventListener('resize', handleResize)
+})
+</script>
