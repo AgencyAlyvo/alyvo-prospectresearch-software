@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import type { Ref } from 'vue'
 
 import { AuthApiService } from '#src-core/services/AuthApiService'
+import { CredentialsStorageService } from '#src-core/services/CredentialsStorageService'
 import type { LoginPayload, SignUpPayload } from '#src-core/types/payload/auth.types'
 import type { SignInResponse, SignUpResponse } from '#src-core/types/response/auth.types'
 
@@ -37,7 +38,7 @@ type AuthStoreSetup = {
 type UseAuthStore = () => AuthStore
 
 /**
- * Cles localStorage pour le token et l'email de l'utilisateur connecte.
+ * Cles localStorage pour le token et l'email.
  */
 const AUTH_TOKEN_STORAGE_KEY: string = 'alyvo_auth_token'
 const AUTH_EMAIL_STORAGE_KEY: string = 'alyvo_auth_email'
@@ -145,6 +146,9 @@ export const useAuthStore: UseAuthStore = defineStore('auth', (): AuthStoreSetup
         localStorage.removeItem(AUTH_TOKEN_STORAGE_KEY)
         localStorage.removeItem(AUTH_EMAIL_STORAGE_KEY)
       }
+
+      // Désactive l'auto-connexion pour que la prochaine ouverture pré-remplisse sans se connecter.
+      await CredentialsStorageService.disableAutoLogin()
     }
   }
 

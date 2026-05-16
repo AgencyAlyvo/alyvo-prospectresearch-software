@@ -2,7 +2,7 @@
   <div class="relative flex h-9 items-center justify-between bg-black text-center select-none" data-tauri-drag-region>
     <div class="w-[96px]"></div>
 
-    <div class="absolute left-1/2 flex h-full -translate-x-1/2 items-center justify-center" data-tauri-drag-region>
+    <div class="absolute left-1/2 flex h-full -translate-x-1/2 items-center justify-center pointer-events-none" data-tauri-drag-region>
       <slot></slot>
     </div>
 

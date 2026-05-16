@@ -10,7 +10,7 @@
     <div class="flex h-full w-full flex-col justify-between px-3">
       <!-- Avatar et email de l'utilisateur connecté. -->
       <div
-        class="flex items-center gap-x-3 rounded-md p-2 transition-colors hover:bg-[rgba(154,101,213,0.12)]"
+        class="flex items-center gap-x-3 rounded-md p-2"
         :class="menuIsExpanded ? '' : 'justify-center'"
       >
         <!-- Icône utilisateur placeholder. -->
@@ -38,7 +38,7 @@
 
       <!-- Bouton de déconnexion en bas de la sidebar. -->
       <button
-        class="flex h-[44px] w-full items-center gap-x-3 rounded-md text-sm text-[#9ba3bd] transition-colors hover:bg-[rgba(220,38,38,0.12)] hover:text-red-300"
+        class="flex h-[44px] w-full cursor-pointer items-center gap-x-3 rounded-md text-sm text-[#9ba3bd] transition-colors hover:bg-[rgba(220,38,38,0.12)] hover:text-red-300"
         :class="menuIsExpanded ? 'px-3' : 'justify-center'"
         type="button"
         @click="handleSignOut"

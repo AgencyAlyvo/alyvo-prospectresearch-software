@@ -169,13 +169,11 @@
 import { computed, onMounted, ref } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 
+import { CredentialsStorageService } from '#src-core/services/CredentialsStorageService'
 import { TauriWindowService } from '#src-core/services/TauriWindowService'
 import type { LoginPayload } from '#src-core/types/payload/auth.types'
 import { useAuthStore } from '#src-nuxt/app/stores/auth.store'
 import { useWindowTransitionStore } from '#src-nuxt/app/stores/windowTransition.store'
-
-// Clé localStorage utilisée pour persister les identifiants si l'utilisateur coche "Rester connecté".
-const SAVED_CREDENTIALS_STORAGE_KEY: string = 'alyvo_login_credentials'
 
 // Stores utilisés pour l'authentification et la transition de fenêtre.
 const authStore: ReturnType<typeof useAuthStore> = useAuthStore()
@@ -196,61 +194,24 @@ const isFormInvalid: ComputedRef<boolean> = computed((): boolean => {
   return credentials.value.email.trim().length === 0 || credentials.value.password.trim().length === 0
 })
 
-// Charge les identifiants sauvegardés dans le localStorage au montage de la page.
-/**
- *
- */
-const retrieveSavedCredentials: () => void = (): void => {
-  if (!import.meta.client) {
-    return
-  }
-
-  const savedCredentialsSerialized: string | null = localStorage.getItem(SAVED_CREDENTIALS_STORAGE_KEY)
-  if (!savedCredentialsSerialized) {
-    return
-  }
-
-  try {
-    // Pré-remplit le formulaire et coche la case "Rester connecté" si des identifiants existent.
-    const savedCredentials: LoginPayload = JSON.parse(savedCredentialsSerialized) as LoginPayload
-    credentials.value = savedCredentials
-    stayLoggedIn.value = true
-  } catch {
-    localStorage.removeItem(SAVED_CREDENTIALS_STORAGE_KEY)
+// Supprime le fichier d'identifiants si l'utilisateur décoche "Rester connecté".
+const onStayLoggedInChange: () => Promise<void> = async (): Promise<void> => {
+  if (!stayLoggedIn.value) {
+    await CredentialsStorageService.clear()
   }
 }
 
-// Supprime les identifiants sauvegardés si l'utilisateur décoche la case "Rester connecté".
-/**
- *
- */
-const onStayLoggedInChange: () => void = (): void => {
-  if (import.meta.client && !stayLoggedIn.value) {
-    localStorage.removeItem(SAVED_CREDENTIALS_STORAGE_KEY)
-  }
-}
-
-// Persiste les identifiants dans le localStorage si l'utilisateur a coché "Rester connecté".
-/**
- *
- */
-const saveCredentialsIfNeeded: () => void = (): void => {
-  if (!import.meta.client) {
-    return
-  }
-
+// Persiste les identifiants dans AppData si "Rester connecté" est coché, sinon supprime le fichier.
+const saveCredentialsIfNeeded: () => Promise<void> = async (): Promise<void> => {
   if (stayLoggedIn.value) {
-    localStorage.setItem(SAVED_CREDENTIALS_STORAGE_KEY, JSON.stringify(credentials.value))
+    await CredentialsStorageService.save(credentials.value.email, credentials.value.password)
     return
   }
 
-  localStorage.removeItem(SAVED_CREDENTIALS_STORAGE_KEY)
+  await CredentialsStorageService.clear()
 }
 
 // Connecte l'utilisateur puis redirige vers la page principale si l'API valide les identifiants.
-/**
- *
- */
 const signIn: () => Promise<void> = async (): Promise<void> => {
   // Empêche une soumission concurrente ou avec un formulaire invalide.
   if (buttonLoading.value || isFormInvalid.value) {
@@ -266,7 +227,7 @@ const signIn: () => Promise<void> = async (): Promise<void> => {
     await authStore.signIn(credentials.value)
 
     // Sauvegarde les identifiants si demandé, puis redimensionne la fenêtre Tauri.
-    saveCredentialsIfNeeded()
+    await saveCredentialsIfNeeded()
     windowTransitionStore.setLoading(true)
     await TauriWindowService.configureMainWindow()
     await navigateTo('/home')
@@ -283,22 +244,32 @@ const signIn: () => Promise<void> = async (): Promise<void> => {
 const authInternalNav: Ref<boolean> = useState('auth-internal-nav', (): boolean => false)
 
 // Marque la navigation comme interne avant d'aller sur la page signup.
-/**
- *
- */
 const goToSignUp: () => void = (): void => {
   authInternalNav.value = true
   navigateTo('/signup')
 }
 
-// Configure la fenêtre Tauri au format de connexion et charge les identifiants sauvegardés.
+// Configure la fenêtre Tauri au format de connexion et charge les identifiants sauvegardés depuis AppData.
 // Ne recentre pas la fenêtre si l'utilisateur vient de la page signup (navigation interne).
+// Déclenche l'auto-connexion si autoLogin est activé dans le fichier — désactivé après déconnexion manuelle.
 onMounted(async (): Promise<void> => {
   const shouldCenter: boolean = !authInternalNav.value
   authInternalNav.value = false
 
   await TauriWindowService.configureLoginWindow(shouldCenter)
-  retrieveSavedCredentials()
   windowTransitionStore.setLoading(false)
+
+  // Charge les identifiants depuis AppData et pré-remplit le formulaire.
+  const stored = await CredentialsStorageService.load()
+
+  if (stored) {
+    credentials.value = { email: stored.email, password: stored.password }
+    stayLoggedIn.value = true
+
+    // Auto-connexion uniquement si activée — désactivée après une déconnexion manuelle.
+    if (stored.autoLogin) {
+      await signIn()
+    }
+  }
 })
 </script>
