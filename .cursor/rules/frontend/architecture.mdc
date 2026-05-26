@@ -1,0 +1,99 @@
+---
+description: Architecture frontend reutilisable pour core shared, app Nuxt, Pinia, services API, auth, runtime config et Tauri
+globs: src-core/**/*.ts,src-nuxt/**/*.ts,src-nuxt/**/*.vue,src-tauri/**/*.rs,src-tauri/**/*.json,tests/**/*.ts
+alwaysApply: false
+---
+
+# Architecture Frontend
+
+## Separation des couches
+
+Quand le projet suit une structure `src-core` + `nuxt-app`:
+
+- le dossier src-core contient les types, enums, models, services, helpers et logique partagee;
+- le dossier src-nuxt/app contient assets, pages, layouts, composants, stores, plugins et styles;
+- le dossier Tauri contient uniquement le shell desktop, la configuration, les permissions et le code Rust.
+
+Garder la logique de domaine partagee hors des composants quand elle peut servir ailleurs.
+
+## Flux de donnees recommande
+
+1. Une page ou un composant affiche l'UI.
+2. Le composant appelle une action Pinia typee.
+3. Le store appelle un service API.
+4. Le service appelle le client HTTP commun.
+5. Le client HTTP ajoute base URL, headers et auth.
+6. Le store met a jour l'etat reactif.
+7. L'UI se met a jour depuis le store.
+
+## Services et Services APÏ
+
+Les services API doivent:
+
+- vivre dans un dossier de services partage;
+- exposer des methodes `public static` ou suivre le pattern local equivalent;
+- retourner des `Promise<T>` explicites;
+- centraliser les chemins d'API;
+- utiliser le client HTTP commun;
+- ne pas gerer toasts, navigation ou etat UI.
+
+Exemple:
+
+```ts
+export class UserApiService {
+  public static async list(query: ListUsersQuery = {}): Promise<UserListResponse> {
+    return await HttpClientService.request<UserListResponse>('/users', { query })
+  }
+}
+
+Les services : 
+```
+
+## Client HTTP commun
+
+Le client HTTP commun doit etre le seul endroit qui:
+
+- lit la base URL depuis la config runtime;
+- normalise les URLs;
+- serialise les query params;
+- ajoute les headers communs;
+- ajoute le token d'auth quand necessaire;
+- appelle `$fetch` ou le client HTTP choisi.
+
+Ne pas dupliquer cette logique dans les composants.
+
+## Stores Pinia
+
+Les stores doivent:
+
+- exposer un etat type;
+- appeler les services API;
+- gerer `isLoading`, erreurs et synchronisation locale;
+- utiliser `try` / `finally` pour les loaders;
+- rester sans manipulation DOM directe.
+
+## Pages et composants
+
+- Les pages orchestrent un ecran.
+- Les composants recoivent des props typees.
+- Les composants emettent des events au parent.
+- Les composants ne doivent pas contenir de logique API complexe.
+
+## Auth
+
+L'auth doit etre centralisee:
+
+- store auth;
+- plugin de persistence si necessaire;
+- client HTTP commun pour injecter le token.
+
+Ne pas stocker un token dans un composant.
+
+## Tauri
+
+Pour les projets Tauri:
+
+- respecter la configuration de securite existante;
+- ne pas assouplir la CSP sans besoin clair;
+- garder les APIs desktop isolees dans des services/plugins;
+- verifier le code Rust/config Tauri avec la commande du projet.

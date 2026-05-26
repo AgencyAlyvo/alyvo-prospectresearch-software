@@ -1,13 +1,21 @@
-# Alyvo - Software & Mobile
+# Alyvo ProspectResearch - Frontend Desktop
 
-## 🛠 Tech Stack
+## Cursor Rules
 
-- Language (Rust and TypeScript)
-- Tauri (Framework backend)
-- Nuxt.js (Framework frontend in Tauri)
-- NodeJS (Environment)
-- Vitest (Unit Tests)
-- CI / CD (Github Actions)
+For AI-assisted work, use the project rules stored in:
+
+- .cursor/rules/frontend
+
+## Tech Stack
+
+- TypeScript and Rust
+- Nuxt 4 and Vue 3
+- Tauri 2
+- Pinia
+- Nuxt UI
+- Tailwind CSS v4 and Sass
+- Vitest
+- GitHub Actions and release-please
 
 <br /><br /><br /><br />
 
@@ -235,7 +243,7 @@ rustup default stable-aarch64-unknown-linux-gnu # Linux arm64
 
 <br /><br /><br /><br />
 
-## 🔄 Cycle Development
+## Cycle Development
 
 Cette commande vérifie rapidement votre code Rust pour s'assurer qu'il se compile mais ne produit pas d'exécutable et ne lance pas l'application (seulement pour s'assurer que le projet Rust compile) :
 
@@ -245,7 +253,7 @@ npm run desktop:check:compile
 ```
 
 Application type : Desktop <br />
-Start the development server on http://localhost:3555/
+Nuxt dev server: http://localhost:1470/
 
 ```bash
 # npm
@@ -271,7 +279,8 @@ npm run test:unit:dev:gui
 
 ```sh
 # npm
-npm run test:unit:staging-prod
+npm run test:unit:staging
+npm run test:unit:prod
 ```
 
 <br /><br /><br /><br />

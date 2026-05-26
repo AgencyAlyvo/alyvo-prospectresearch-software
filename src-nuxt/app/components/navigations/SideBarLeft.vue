@@ -1,7 +1,7 @@
 <template>
   <div
     id="sidebar-left"
-    class="fixed z-10 flex w-[240px] flex-col items-center justify-start overflow-hidden p-4 text-white"
+    class="fixed z-10 flex w-[260px] flex-col items-center justify-start overflow-hidden p-4 text-white"
     style="
       height: calc(100vh - 36px);
       background: linear-gradient(180deg, #0b1433 0%, #050917 100%);
@@ -65,10 +65,13 @@ type NavLink = {
 
 // Liens principaux affichés en haut de la sidebar.
 const startLinks: NavLink[] = [
-  { name: 'Tableau de bord', icon: 'i-heroicons-squares-2x2', to: '/home' },
-  { name: 'Prospects', icon: 'i-heroicons-magnifying-glass', to: '/home/prospects' },
-  { name: 'Campagnes', icon: 'i-heroicons-phone', to: '/home/campaigns' },
-  { name: 'Analytiques', icon: 'i-heroicons-chart-bar', to: '/home/analytics' },
+  { name: 'Tableau de bord LinkedIn', icon: 'i-heroicons-squares-2x2', to: '/home' },
+  { name: 'Objectif LinkedIn semaine', icon: 'i-heroicons-calendar', to: '/home/linkedin/weekly' },
+  { name: 'Tous les prospects Linkedin', icon: 'i-heroicons-users', to: '/home/linkedin/all' },
+  { name: 'Pipeline LinkedIn', icon: 'i-heroicons-view-columns', to: '/home/linkedin/pipeline' },
+  { name: 'Rendez-vous appels', icon: 'i-heroicons-phone', to: '/home/linkedin/calls' },
+  { name: 'Relances LinkedIn', icon: 'i-heroicons-bell', to: '/home/tasks' },
+  { name: 'Parametres LinkedIn', icon: 'i-heroicons-cog-6-tooth', to: '/home/settings' },
 ]
 
 // Aucun lien de bas pour l'instant.
@@ -79,5 +82,13 @@ const bottomLinks: NavLink[] = []
  * @param {string} to - Chemin de la route à comparer avec la route active.
  * @returns {boolean} Vrai si la route courante correspond au chemin donné.
  */
-const isActive: (to: string) => boolean = (to: string): boolean => useRoute().path === to
+const isActive: (to: string) => boolean = (to: string): boolean => {
+  const path: string = useRoute().path
+
+  if (to === '/home') {
+    return path === '/home'
+  }
+
+  return path.startsWith(to)
+}
 </script>

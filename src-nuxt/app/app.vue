@@ -1,5 +1,5 @@
 <template>
-  <UApp>
+  <UApp :locale="fr">
     <div>
       <Transition name="fade">
         <div
@@ -18,6 +18,7 @@
 </template>
 
 <script lang="ts" setup>
+import { fr } from '@nuxt/ui/locale'
 import { useWindowTransitionStore } from '#src-nuxt/app/stores/windowTransition.store'
 
 const windowTransitionStore: ReturnType<typeof useWindowTransitionStore> = useWindowTransitionStore()

@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(Get-ChildItem -Recurse -Filter \"*[Cc]ontroller*\" -Type File)",
-      "Bash(Select-Object -First 20)",
-      "Bash(cd \"C:\\\\Users\\\\Corentin\\\\Desktop\\\\AgencyAlyvo\\\\alyvo-prospectresearch-backend\" && find . -type f -path \"*/routes/*\" -name \"*.ts\" | grep -v node_modules)"
-    ]
-  }
-}

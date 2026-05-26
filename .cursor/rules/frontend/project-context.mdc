@@ -1,0 +1,60 @@
+---
+description: Regles globales reutilisables pour frontend Nuxt, Vue, Tauri, Pinia et TypeScript
+alwaysApply: true
+---
+
+# Frontend Nuxt / Vue / Tauri
+
+Ces instructions definissent un style frontend reutilisable pour les projets Nuxt/Vue, notamment les applications desktop Tauri.
+
+## Stack par defaut
+
+- Langage: TypeScript strict.
+- Framework frontend: Nuxt v4 / Vue v3.
+- State management: Pinia.
+- UI kit: Nuxt UI quand disponible.
+- Styling: Tailwind CSS v4.
+- Tests: Vitest quand disponible.
+- Package manager: npm.
+- SSR: respecter la configuration existante; pour une application Tauri, SSR doit rester desactive.
+
+## Regles globales
+
+- Lire le code existant avant de creer un nouveau pattern.
+- Suivre les conventions locales quand elles sont plus precises que cette regle.
+- Ne jamais utiliser `any`.
+- Utiliser `import type` pour les imports purement type.
+- Ajouter un type de retour explicite aux fonctions, callbacks, actions de store et `computed`.
+- Preferer des `type` aliases pour props, emits, stores, payloads, responses et objets locaux.
+- Centraliser les appels API dans des services.
+- Garder les types partages dans un dossier de types.
+- Garder l'UI dans le dossier applicatif du framework.
+- Ne pas contourner le client HTTP commun pour les appels authentifies.
+- Respecter Prettier, ESLint et le formatage Tailwind configures dans le projet.
+
+## Priorites de conception
+
+1. UX claire et stable.
+2. Typage strict.
+3. Flux de donnees lisible.
+4. Composants simples.
+5. Cohesion avec la stack existante.
+
+## Imports
+
+Utiliser les aliases du projet quand ils existent:
+
+```ts
+import { UserApiService } from '#src-core/services/UserApiService'
+import { useUsersStore } from '#src-nuxt/app/stores/users.store'
+import type { UserResponse } from '#src-core/types/response/users.types'
+```
+
+Eviter les chemins relatifs profonds entre couches applicatives.
+
+## Scripts et verification
+
+- Utiliser les scripts declares dans `package.json`.
+- Pour un changement, lancer le : lint:ts et lint:eslint.
+- Pour un changement Tauri/Rust, lancer le : desktop:check:compile
+- Pour un changement de contrat API, verifier aussi le dossier du backend.

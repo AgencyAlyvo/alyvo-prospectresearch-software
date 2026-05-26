@@ -71,7 +71,7 @@
         "enable": false,
         "scope": []
       },
-      "capabilities": [],
+      "capabilities": ["default"],
       "dangerousDisableAssetCspModification": false,
       "freezePrototype": false,
       "headers": {

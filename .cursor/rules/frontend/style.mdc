@@ -1,0 +1,107 @@
+---
+description: Style frontend reutilisable pour TypeScript, Vue, stores, services, nommage et tests
+globs: src-core/**/*.ts,src-nuxt/**/*.ts,src-nuxt/**/*.vue,tests/**/*.ts
+alwaysApply: false
+---
+
+# Style Frontend
+
+## Philosophie
+
+Le code frontend doit etre strict, explicite et oriente usage. L'interface doit etre claire, stable, lisible et adaptee au type de produit.
+
+Priorites:
+
+1. Typage strict.
+2. Flux de donnees clair.
+3. UI stable.
+4. Composants simples.
+5. Tests utiles quand le comportement change.
+
+## TypeScript
+
+- Ne jamais utiliser `any`.
+- Utiliser `unknown` puis valider quand une entree externe est inconnue.
+- Utiliser `import type` pour les imports type-only.
+- Ajouter des types de retour explicites.
+- Typer `Ref`, `ComputedRef`, stores, callbacks et payloads.
+- Preferer `type` pour props, emits, stores et contrats API.
+- Garder les enums avec valeurs explicites.
+
+Exemple:
+
+```ts
+const users: Ref<UserResponse[]> = ref([])
+
+const safeUsers: ComputedRef<UserResponse[]> = computed(
+  (): UserResponse[] => props.users ?? [],
+)
+```
+
+## Nommage
+
+- Composants Vue: `PascalCase.vue`.
+- Stores: `camelCase.store.ts`.
+- Services: `PascalCaseService.ts`.
+- Types payload/response: fichiers `.types.ts`.
+- Composables: `useSomething.ts`.
+- Utils: nom simple et explicite.
+
+## Stores
+
+Pattern recommande:
+
+- type public du store;
+- type setup interne si le store est complexe;
+- refs typees;
+- actions async typees;
+- `try` / `finally` pour `isLoading`;
+- helper local pour synchroniser les listes.
+
+Exemple:
+
+```ts
+const fetchList: (query?: ListUsersQuery) => Promise<void> = async (
+  query?: ListUsersQuery,
+): Promise<void> => {
+  isLoading.value = true
+  try {
+    const response: UserListResponse = await UserApiService.list(query ?? {})
+    users.value = response.data
+  } finally {
+    isLoading.value = false
+  }
+}
+```
+
+## Services
+
+Les services API doivent:
+
+- etre classes ou modules selon le pattern local;
+- retourner des `Promise<T>` explicites;
+- utiliser le client HTTP commun;
+- centraliser les chemins d'API;
+- ne pas gerer l'affichage, les toasts ou la navigation.
+
+## Vue
+
+- Utiliser `<script lang="ts" setup>`.
+- Garder `<template>` avant `<script>`.
+- Definir les props avec un type nomme.
+- Utiliser `withDefaults` pour les defaults.
+- Typer les events quand c'est necessaire.
+- Garder les fonctions de composant petites.
+- Eviter les appels API directs dans les composants.
+
+## Tests
+
+Ajouter ou adapter des tests quand:
+
+- un service API change;
+- un store change de comportement;
+- un helper de date/statut/formatage change;
+- une transformation de donnees change;
+- une regression est corrigee.
+
+Ne pas ajouter de tests vides ou purement cosmetiques.

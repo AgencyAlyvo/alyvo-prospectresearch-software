@@ -1,0 +1,119 @@
+---
+description: Regles UI reutilisables pour composants Vue, Nuxt UI, Tailwind, layout, formulaires, tables et feedback utilisateur
+globs: src-nuxt/app/**/*.vue,src-nuxt/app/**/*.ts,src-nuxt/app/assets/**/*.scss,src-nuxt/app/assets/**/*.css
+alwaysApply: false
+---
+
+# Vue UI
+
+## Intention UI
+
+Adapter l'interface au type de produit:
+
+- un outil SaaS, CRM ou back-office doit etre dense, lisible et efficace;
+- un site marketing peut etre plus editorial;
+- un jeu ou une experience creative peut etre plus expressive;
+- une application desktop doit rester stable, claire et ergonomique dans sa fenetre cible.
+
+Eviter:
+
+- les layouts qui bougent quand les donnees changent;
+- les cartes imbriquees dans des cartes;
+- les textes trop longs dans des boutons compacts;
+- les effets decoratifs qui nuisent a la lecture;
+- les pages marketing quand l'utilisateur a demande un outil ou une app.
+
+## Structure Vue
+
+Pattern attendu:
+
+```vue
+<template>
+  <section>
+    ...
+  </section>
+</template>
+
+<script lang="ts" setup>
+type ExampleProps = {
+  label: string
+  loading?: boolean
+}
+
+const props: ExampleProps = withDefaults(defineProps<ExampleProps>(), {
+  loading: false,
+})
+</script>
+```
+
+Regles:
+
+- Props typees avec un alias `type`.
+- Defaults via `withDefaults`.
+- `Ref` et `ComputedRef` explicites.
+- Fonctions locales typees.
+- Events pour informer le parent plutot que modifier son etat directement.
+
+## Nuxt UI et composants
+
+Utiliser le design system ou UI kit du projet quand il existe:
+
+- boutons pour actions;
+- modales pour confirmations ou editions;
+- selects pour options;
+- icones pour actions compactes;
+- toasts pour feedback utilisateur;
+- badges pour statuts.
+
+Personnaliser via les APIs du design system plutot que recreer un composant complet sans raison.
+
+## Tailwind et styles
+
+- Utiliser Tailwind utilities quand le projet l'utilise deja.
+- Reutiliser les tokens, variables ou classes existantes du projet.
+- Ne pas hardcoder une palette specifique dans les rules reutilisables.
+- Garder les radius, espacements, bordures et ombres coherents avec le projet.
+- Garder le texte lisible a toutes les tailles ciblees.
+- Eviter les styles inline sauf cas ponctuel justifie.
+
+## Tables et listes
+
+Pour les tables:
+
+- fixer une largeur minimale si beaucoup de colonnes;
+- utiliser `overflow-x-auto` quand necessaire;
+- garder les headers lisibles;
+- afficher une valeur de fallback pour les donnees absentes;
+- eviter que les actions de ligne declenchent la navigation par accident;
+- afficher un etat empty et un etat loading.
+
+## Formulaires
+
+Pour les formulaires:
+
+- labels clairs;
+- erreurs backend visibles;
+- actions desactivees pendant le submit;
+- payloads conformes aux types;
+- validation frontend utile mais jamais seule source de verite.
+
+## Dialogs et confirmations
+
+Pour les actions destructives:
+
+- demander confirmation;
+- afficher la ressource concernee quand possible;
+- desactiver le bouton pendant l'action;
+- fermer la modale seulement apres succes.
+
+## Feedback utilisateur
+
+Utiliser le mecanisme de feedback du projet pour:
+
+- creation reussie;
+- update reussie;
+- suppression reussie;
+- warning metier;
+- erreur actionnable.
+
+Les messages doivent etre courts, concrets et lies a l'action.

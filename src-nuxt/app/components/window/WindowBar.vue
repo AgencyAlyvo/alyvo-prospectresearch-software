@@ -11,7 +11,7 @@
     </div>
 
     <!-- Boutons de contrôle de la fenêtre. -->
-    <div class="flex h-full flex-shrink-0 items-center space-x-1">
+    <div v-if="appWindow" class="flex h-full flex-shrink-0 items-center space-x-1">
       <!-- Bouton de minimisation. -->
       <button
         id="titlebar-minimize"
@@ -53,10 +53,26 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 
-import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { Window as TauriWindow } from '@tauri-apps/api/window'
+import { getCurrentWindow } from '@tauri-apps/api/window'
 
-const appWindow: TauriWindow = getCurrentWindow()
+/**
+ * Recupere la fenetre Tauri quand l'app tourne dans le shell desktop.
+ * @returns {TauriWindow | undefined} Fenetre Tauri ou undefined dans un navigateur web.
+ */
+const resolveAppWindow: () => TauriWindow | undefined = (): TauriWindow | undefined => {
+  if (!import.meta.client || !('__TAURI_INTERNALS__' in window)) {
+    return undefined
+  }
+
+  try {
+    return getCurrentWindow()
+  } catch {
+    return undefined
+  }
+}
+
+const appWindow: TauriWindow | undefined = resolveAppWindow()
 const route: ReturnType<typeof useRoute> = useRoute()
 
 // Vrai sur les pages d'authentification où le bouton maximize ne doit pas apparaître.
@@ -66,17 +82,23 @@ const isAuthRoute: ComputedRef<boolean> = computed((): boolean => route.path ===
  * Minimise la fenetre.
  * @returns {Promise<void>} Promesse résolue après minimisation.
  */
-const btnMinimizeWindow: () => Promise<void> = (): Promise<void> => appWindow.minimize()
+const btnMinimizeWindow: () => Promise<void> = async (): Promise<void> => {
+  await appWindow?.minimize()
+}
 
 /**
  * Bascule la fenetre entre maximise et restaure.
  * @returns {Promise<void>} Promesse résolue après le basculement.
  */
-const btnMaximizeWindow: () => Promise<void> = (): Promise<void> => appWindow.toggleMaximize()
+const btnMaximizeWindow: () => Promise<void> = async (): Promise<void> => {
+  await appWindow?.toggleMaximize()
+}
 
 /**
  * Cache la fenetre.
  * @returns {Promise<void>} Promesse résolue après masquage.
  */
-const btnCloseWindow: () => Promise<void> = (): Promise<void> => appWindow.hide()
+const btnCloseWindow: () => Promise<void> = async (): Promise<void> => {
+  await appWindow?.hide()
+}
 </script>
