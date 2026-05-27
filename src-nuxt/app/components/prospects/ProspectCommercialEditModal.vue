@@ -263,10 +263,10 @@ type SelectUiConfig = {
   itemTrailingIcon: string
 }
 const selectUi: SelectUiConfig = {
-  base: 'h-11 cursor-pointer rounded-md border border-[#2f3d67] bg-[rgba(5,9,23,0.86)] px-3 text-[#f7f8ff] shadow-[0_10px_24px_rgba(0,0,0,0.18)] outline-none transition hover:border-[#485780] focus:border-[#9a65d5]',
+  base: 'h-11 w-full cursor-pointer rounded-md border border-[#2f3d67] bg-[rgba(5,9,23,0.86)] px-3 text-[#f7f8ff] shadow-[0_10px_24px_rgba(0,0,0,0.18)] outline-none transition hover:border-[#485780] focus:border-[#9a65d5]',
   trailingIcon: 'text-[#9ba3bd]',
   content:
-    'w-max min-w-full max-h-60 rounded-md border border-[#2f3d67] bg-[#071022] shadow-[0_18px_48px_rgba(0,0,0,0.35)] ring-0',
+    'max-h-60 w-(--reka-select-trigger-width) rounded-md border border-[#2f3d67] bg-[#071022] shadow-[0_18px_48px_rgba(0,0,0,0.35)] ring-0 origin-(--reka-select-content-transform-origin)',
   viewport: 'relative divide-y divide-[#152247] scroll-py-1 overflow-y-auto flex-1',
   item: 'group relative flex w-full items-start gap-1.5 rounded-md p-1.5 text-sm !text-[#c7d0ea] outline-none transition-colors hover:bg-[#111c3f] hover:!text-white data-[highlighted]:bg-[#111c3f] data-[highlighted]:!text-white data-[state=checked]:bg-[#16234f] data-[state=checked]:!text-white',
   itemWrapper: 'min-w-0 flex-1 !text-current',

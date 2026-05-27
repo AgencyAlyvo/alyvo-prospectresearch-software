@@ -90,6 +90,11 @@ const sections: NavSection[] = [
     title: 'Business Locaux',
     links: [
       {
+        name: 'Tableau de bord Business',
+        icon: 'i-heroicons-squares-2x2',
+        to: '/home/local-business',
+      },
+      {
         name: 'Tous les business locaux',
         icon: 'i-heroicons-building-storefront',
         to: '/home/local-business/all',
@@ -124,8 +129,8 @@ const bottomLinks: NavLink[] = []
 const isActive: (to: string) => boolean = (to: string): boolean => {
   const path: string = useRoute().path
 
-  if (to === '/home') {
-    return path === '/home'
+  if (to === '/home' || to === '/home/local-business') {
+    return path === to
   }
 
   return path.startsWith(to)

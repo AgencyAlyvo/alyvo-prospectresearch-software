@@ -4,7 +4,9 @@
     <p v-if="hint" class="text-[11px] leading-snug text-[#9ba3bd]">
       {{ hint }}
     </p>
-    <slot />
+    <div class="w-full min-w-0">
+      <slot />
+    </div>
   </div>
 </template>
 
