@@ -59,7 +59,7 @@ type LocalBusinessProspectsStoreSetup = {
   bulkImport: (
     payload: BulkImportFromOsmPayload,
     options?: BulkImportFromOsmOptions,
-  ) => Promise<{ inserted: number; skipped: number }>
+  ) => Promise<{ inserted: number; skipped: number; enriched: number }>
   setFilters: (query: ListLocalBusinessProspectsQuery) => void
   ensureCacheLoaded: (options?: { force?: boolean }) => Promise<void>
   aggregateCallsByDay: (dateIso: string) => Promise<LocalBusinessCallEvent[]>
@@ -99,7 +99,7 @@ type LocalBusinessProspectsStore = {
   bulkImport: (
     payload: BulkImportFromOsmPayload,
     options?: BulkImportFromOsmOptions,
-  ) => Promise<{ inserted: number; skipped: number }>
+  ) => Promise<{ inserted: number; skipped: number; enriched: number }>
   setFilters: (query: ListLocalBusinessProspectsQuery) => void
   ensureCacheLoaded: (options?: { force?: boolean }) => Promise<void>
   aggregateCallsByDay: (dateIso: string) => Promise<LocalBusinessCallEvent[]>
@@ -480,21 +480,24 @@ export const useLocalBusinessProspectsStore: UseLocalBusinessProspectsStore = de
 
     /**
      * Importe en masse des resultats OSM valides.
+     * Chaque chunk envoye au backend est enrichi cote serveur via n8n
+     * (verification site web + Pages Jaunes) avant insertion.
      * @param {BulkImportFromOsmPayload} payload - Items a importer.
      * @param {BulkImportFromOsmOptions} [options] - Callback de progression optionnel.
-     * @returns {Promise<{ inserted: number; skipped: number }>} Statistiques d'import.
+     * @returns {Promise<{ inserted: number; skipped: number; enriched: number }>} Statistiques d'import.
      */
     const bulkImport: (
       payload: BulkImportFromOsmPayload,
       options?: BulkImportFromOsmOptions,
-    ) => Promise<{ inserted: number; skipped: number }> = async (
+    ) => Promise<{ inserted: number; skipped: number; enriched: number }> = async (
       payload: BulkImportFromOsmPayload,
       options?: BulkImportFromOsmOptions,
-    ): Promise<{ inserted: number; skipped: number }> => {
+    ): Promise<{ inserted: number; skipped: number; enriched: number }> => {
       const total: number = payload.items.length
       const BATCH_SIZE: number = options?.onProgress ? 100 : 1000
       let inserted: number = 0
       let skipped: number = 0
+      let enriched: number = 0
       let processed: number = 0
 
       const emitProgress: (progress: OsmBulkImportProgress) => void = options?.onProgress
@@ -508,29 +511,31 @@ export const useLocalBusinessProspectsStore: UseLocalBusinessProspectsStore = de
        * @returns {void}
        */
       const reportProgress: () => void = function reportOsmImportProgress(): void {
-        emitProgress({ total, processed, inserted, skipped })
+        emitProgress({ total, processed, inserted, skipped, enriched })
       }
 
       reportProgress()
 
       for (let offset: number = 0; offset < payload.items.length; offset += BATCH_SIZE) {
         const chunk: BulkImportFromOsmPayload['items'] = payload.items.slice(offset, offset + BATCH_SIZE)
-        const stats: { inserted: number; skipped: number } = await LocalBusinessProspectApiService.bulkImport({
-          items: chunk,
-        })
+        const stats: { inserted: number; skipped: number; enriched: number } =
+          await LocalBusinessProspectApiService.bulkImport({
+            items: chunk,
+          })
         inserted += stats.inserted
         skipped += stats.skipped
+        enriched += stats.enriched
         processed += chunk.length
         reportProgress()
       }
 
       if (options?.onProgress) {
-        options.onProgress({ total, processed, inserted, skipped })
+        options.onProgress({ total, processed, inserted, skipped, enriched })
       }
 
       cacheLoaded.value = false
 
-      return { inserted, skipped }
+      return { inserted, skipped, enriched }
     }
 
     /**

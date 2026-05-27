@@ -49,11 +49,8 @@
             <UFormField label="URL Site web" :ui="fieldUi">
               <UInput v-model="form.website" variant="none" :ui="inputUi" />
             </UFormField>
-            <UFormField label="URL Facebook" :ui="fieldUi">
-              <UInput v-model="form.facebookUrl" variant="none" :ui="inputUi" />
-            </UFormField>
-            <UFormField label="URL Instagram" :ui="fieldUi">
-              <UInput v-model="form.instagramUrl" variant="none" :ui="inputUi" />
+            <UFormField label="URL Pages Jaunes" :ui="fieldUi">
+              <UInput v-model="form.pagesJaunesUrl" variant="none" :ui="inputUi" />
             </UFormField>
             <UFormField label="Horaires" :ui="fieldUi" class="md:col-span-2">
               <textarea
@@ -127,8 +124,7 @@ type EditForm = {
   email: string
   phone: string
   website: string
-  facebookUrl: string
-  instagramUrl: string
+  pagesJaunesUrl: string
   openingHours: string
 }
 
@@ -172,8 +168,7 @@ const buildForm: () => EditForm = (): EditForm => ({
   email: props.prospect.email ?? '',
   phone: props.prospect.phone ?? '',
   website: props.prospect.website ?? '',
-  facebookUrl: props.prospect.facebookUrl ?? '',
-  instagramUrl: props.prospect.instagramUrl ?? '',
+  pagesJaunesUrl: props.prospect.pagesJaunesUrl ?? '',
   openingHours: props.prospect.openingHours ?? '',
 })
 
@@ -210,8 +205,7 @@ const handleSubmit: () => Promise<void> = async (): Promise<void> => {
       email: optionalString(form.value.email) ?? null,
       phone: optionalString(form.value.phone) ?? null,
       website: optionalString(form.value.website) ?? null,
-      facebookUrl: optionalString(form.value.facebookUrl) ?? null,
-      instagramUrl: optionalString(form.value.instagramUrl) ?? null,
+      pagesJaunesUrl: optionalString(form.value.pagesJaunesUrl) ?? null,
       openingHours: optionalString(form.value.openingHours) ?? null,
     }
     await store.update(props.prospect.id, payload, { refreshCurrent: true })

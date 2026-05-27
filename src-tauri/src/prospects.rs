@@ -137,9 +137,7 @@ pub struct LocalBusinessProspect {
     #[serde(default)]
     pub website: Option<String>,
     #[serde(default)]
-    pub facebook_url: Option<String>,
-    #[serde(default)]
-    pub instagram_url: Option<String>,
+    pub pages_jaunes_url: Option<String>,
     #[serde(default, deserialize_with = "lax_bool")]
     pub has_website: bool,
     #[serde(default)]

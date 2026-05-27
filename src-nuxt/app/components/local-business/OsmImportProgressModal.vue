@@ -26,6 +26,10 @@
           }}
         </p>
 
+        <p v-if="!done" class="mb-3 text-xs text-[#9a65d5]">
+          Verification des sites web et enrichissement Pages Jaunes en cours...
+        </p>
+
         <div class="rounded-md border border-[#2f3d67] bg-[rgba(5,9,23,0.5)] p-4">
           <p class="text-center text-3xl font-semibold text-white tabular-nums">
             {{ progress.processed }}
@@ -35,10 +39,14 @@
 
           <UProgress class="mt-4" :model-value="percent" color="primary" />
 
-          <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <dl class="mt-4 grid grid-cols-3 gap-3 text-sm">
             <div class="rounded-md border border-[#2f3d67] bg-[#0b1433]/60 px-3 py-2">
               <dt class="text-xs text-[#9ba3bd]">Ajoutes</dt>
               <dd class="mt-0.5 text-lg font-semibold text-[#c7a8f2] tabular-nums">{{ progress.inserted }}</dd>
+            </div>
+            <div class="rounded-md border border-[#2f3d67] bg-[#0b1433]/60 px-3 py-2">
+              <dt class="text-xs text-[#9ba3bd]">Enrichis (n8n)</dt>
+              <dd class="mt-0.5 text-lg font-semibold text-[#9a65d5] tabular-nums">{{ progress.enriched }}</dd>
             </div>
             <div class="rounded-md border border-[#2f3d67] bg-[#0b1433]/60 px-3 py-2">
               <dt class="text-xs text-[#9ba3bd]">Ignores (doublons)</dt>

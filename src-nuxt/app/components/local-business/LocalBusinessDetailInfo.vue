@@ -102,15 +102,9 @@ const items: ComputedRef<DetailItem[]> = computed((): DetailItem[] => [
     external: true,
   },
   {
-    label: 'URL Facebook',
-    value: props.prospect.facebookUrl,
-    href: props.prospect.facebookUrl ?? undefined,
-    external: true,
-  },
-  {
-    label: 'URL Instagram',
-    value: props.prospect.instagramUrl,
-    href: props.prospect.instagramUrl ?? undefined,
+    label: 'URL Pages Jaunes',
+    value: props.prospect.pagesJaunesUrl,
+    href: props.prospect.pagesJaunesUrl ?? undefined,
     external: true,
   },
   {

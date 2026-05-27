@@ -12,6 +12,7 @@
         placeholder="Ex. Station U, Fuel, 35136, rue de Nantes"
         icon="i-heroicons-magnifying-glass"
         variant="none"
+        class="w-full"
         :ui="inputUi"
       />
     </AlyvoListFilterField>
@@ -20,7 +21,7 @@
       label="Ville seule"
       hint="Filtre additionnel sur la ville enregistree (independant de la recherche texte)"
     >
-      <UInput v-model="city" placeholder="Ex. Saint-Jacques-de-la-Lande" variant="none" :ui="inputUi" />
+      <UInput v-model="city" placeholder="Ex. Saint-Jacques-de-la-Lande" variant="none" class="w-full" :ui="inputUi" />
     </AlyvoListFilterField>
 
     <AlyvoListFilterField label="Statut" hint="Etape commerciale du prospect">

@@ -12,6 +12,7 @@
         icon="i-heroicons-magnifying-glass"
         placeholder="Ex. Dupont, Alyvo, Directeur commercial"
         variant="none"
+        class="w-full"
         :ui="inputUi"
       />
     </AlyvoListFilterField>
@@ -83,7 +84,7 @@ const localFavorite: Ref<string> = ref(allFavoritesValue)
 /** Configuration UI de l'input de recherche. */
 type InputUiConfig = { base: string; leadingIcon: string }
 const inputUi: InputUiConfig = {
-  base: 'h-11 rounded-md border border-[#2f3d67] bg-[rgba(5,9,23,0.86)] px-3 text-[#f7f8ff] placeholder:text-[#626d90] shadow-[0_10px_24px_rgba(0,0,0,0.18)] outline-none transition hover:border-[#485780] focus:border-[#9a65d5] focus:shadow-[0_0_0_1px_rgba(154,101,213,0.28),0_10px_24px_rgba(0,0,0,0.18)]',
+  base: 'h-11 w-full rounded-md border border-[#2f3d67] bg-[rgba(5,9,23,0.86)] px-3 text-[#f7f8ff] placeholder:text-[#626d90] shadow-[0_10px_24px_rgba(0,0,0,0.18)] outline-none transition hover:border-[#485780] focus:border-[#9a65d5] focus:shadow-[0_0_0_1px_rgba(154,101,213,0.28),0_10px_24px_rgba(0,0,0,0.18)]',
   leadingIcon: 'text-[#9ba3bd]',
 } as const
 /** Configuration UI du select de statut. */

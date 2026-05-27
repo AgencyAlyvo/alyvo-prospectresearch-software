@@ -104,6 +104,7 @@ type SelectItem = {
 type ImportStats = {
   inserted: number
   skipped: number
+  enriched: number
 }
 
 const ALL: string = '__all__'
@@ -122,6 +123,7 @@ const importProgress: Ref<OsmBulkImportProgress> = ref({
   processed: 0,
   inserted: 0,
   skipped: 0,
+  enriched: 0,
 })
 
 const alreadyImportedCount: ComputedRef<number> = computed((): number =>
@@ -178,7 +180,7 @@ const syncOsmImportProgressModal: (progress: OsmBulkImportProgress) => void = (
 const importSelected: (items: OsmSearchResult[]) => Promise<void> = async (items: OsmSearchResult[]): Promise<void> => {
   isImporting.value = true
   importProgressDone.value = false
-  importProgress.value = { total: items.length, processed: 0, inserted: 0, skipped: 0 }
+  importProgress.value = { total: items.length, processed: 0, inserted: 0, skipped: 0, enriched: 0 }
   importProgressOpen.value = true
 
   try {
@@ -189,11 +191,13 @@ const importSelected: (items: OsmSearchResult[]) => Promise<void> = async (items
       },
     )
     importProgressDone.value = true
+    const enrichmentSuffix: string =
+      stats.enriched > 0 ? ` (${stats.enriched} enrichis via n8n)` : ' (enrichissement n8n indisponible, donnees OSM)'
     toast.add({
       title: 'Import termine',
-      description: `${stats.inserted} business importes, ${stats.skipped} ignores (doublons).`,
+      description: `${stats.inserted} business importes${enrichmentSuffix}, ${stats.skipped} ignores (doublons).`,
       color: 'success',
-      duration: 4000,
+      duration: 5000,
     })
     store.osmPreview = []
   } catch (err) {

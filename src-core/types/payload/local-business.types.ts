@@ -25,8 +25,7 @@ export type CreateLocalBusinessProspectPayload = {
   email?: string | null
   emailSource?: LocalBusinessEmailSource | null
   website?: string | null
-  facebookUrl?: string | null
-  instagramUrl?: string | null
+  pagesJaunesUrl?: string | null
   openingHours?: string | null
   contactChannel?: LocalBusinessContactChannel | null
   notes?: string | null
@@ -118,7 +117,6 @@ export type OsmSearchResult = {
   phone: string | null
   email: string | null
   website: string | null
-  facebookUrl: string | null
   openingHours: string | null
 }
 
@@ -131,12 +129,14 @@ export type BulkImportFromOsmPayload = {
 
 /**
  * Progression d'un import OSM (lots envoyes au backend).
+ * `enriched` est le cumul des business pour lesquels n8n a enrichi au moins un champ.
  */
 export type OsmBulkImportProgress = {
   total: number
   processed: number
   inserted: number
   skipped: number
+  enriched: number
 }
 
 /**

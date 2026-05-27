@@ -38,8 +38,7 @@ export type LocalBusinessProspectSummary = {
   email: string | null
   emailSource: string | null
   website: string | null
-  facebookUrl: string | null
-  instagramUrl: string | null
+  pagesJaunesUrl: string | null
   hasWebsite: boolean
   seoScore: number | null
   performanceScore: number | null
@@ -113,8 +112,12 @@ export type OsmSearchResultsResponse = {
 
 /**
  * Reponse de l'import en masse.
+ * `enriched` compte les business pour lesquels au moins un champ vient du workflow n8n
+ * (verification de site web + Pages Jaunes). 0 si le webhook n8n n'est pas configure
+ * ou indisponible, auquel cas l'import retombe sur les donnees OSM brutes.
  */
 export type BulkImportFromOsmResponse = {
   inserted: number
   skipped: number
+  enriched: number
 }
