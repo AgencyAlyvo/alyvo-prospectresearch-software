@@ -22,7 +22,7 @@ export enum LinkedinProspectStatus {
 }
 
 /**
- * Types d'actions journalisees dans la timeline LinkedIn.
+ * Types d'actions journalisees dans la timeline (LinkedIn + Business locaux).
  */
 export enum ProspectActionType {
   CREATED = 'created',
@@ -41,6 +41,9 @@ export enum ProspectActionType {
   PROPOSAL_SENT = 'proposal_sent',
   PROPOSAL_ACCEPTED = 'proposal_accepted',
   PROPOSAL_REFUSED = 'proposal_refused',
+  PHONE_CALL = 'phone_call',
+  ENRICHED = 'enriched',
+  IMPORTED_FROM_OSM = 'imported_from_osm',
 }
 
 /**
@@ -55,4 +58,5 @@ export enum ProspectChannel {
  */
 export enum ProspectableType {
   LINKEDIN_PROSPECT = 'linkedin_prospect',
+  LOCAL_BUSINESS_PROSPECT = 'local_business_prospect',
 }

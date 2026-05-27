@@ -35,6 +35,7 @@ export type LinkedinProspectSummary = {
   email: string | null
   phone: string | null
   status: LinkedinProspectStatus
+  isFavorite: boolean
   invitationSentAt: string | null
   invitationAcceptedAt: string | null
   message1SentAt: string | null

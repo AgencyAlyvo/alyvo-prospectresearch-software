@@ -1,5 +1,10 @@
 <template>
   <div class="flex items-center gap-1">
+    <ProspectFavoriteButton
+      :is-favorite="prospect.isFavorite"
+      :loading="favoriteLoading"
+      @toggle="emit('toggleFavorite')"
+    />
     <UTooltip text="Ouvrir LinkedIn">
       <UButton
         :disabled="!prospect.linkedinUrl"
@@ -46,6 +51,7 @@ type LinkedinQuickActionsCellProps = {
   prospect: LinkedinProspectSummary
   refreshing?: boolean
   deleting?: boolean
+  favoriteLoading?: boolean
 }
 
 /**
@@ -54,10 +60,12 @@ type LinkedinQuickActionsCellProps = {
 type LinkedinQuickActionsCellEmits = {
   refresh: []
   delete: []
+  toggleFavorite: []
 }
 
 const props: LinkedinQuickActionsCellProps = defineProps<LinkedinQuickActionsCellProps>()
-const emit: ((event: 'refresh') => void) & ((event: 'delete') => void) = defineEmits<LinkedinQuickActionsCellEmits>()
+const emit: ((event: 'refresh') => void) & ((event: 'delete') => void) & ((event: 'toggleFavorite') => void) =
+  defineEmits<LinkedinQuickActionsCellEmits>()
 
 /**
  * Ouvre la page LinkedIn du prospect.

@@ -1,27 +1,50 @@
 <template>
-  <div class="grid gap-3 rounded-lg border border-[#2f3d67] bg-[#0b1433]/70 p-4 md:grid-cols-[1fr_auto_auto]">
-    <UInput
-      v-model="localSearch"
-      icon="i-heroicons-magnifying-glass"
-      placeholder="Rechercher un prospect..."
-      variant="none"
-      :ui="inputUi"
-    />
-    <USelect
-      v-model="localStatus"
-      :items="statusItems"
-      placeholder="Statut"
-      variant="none"
-      :ui="selectUi"
-      class="min-w-[220px]"
-    />
+  <form
+    class="grid gap-3 rounded-lg border border-[#2f3d67] bg-[#0b1433]/70 p-4 md:grid-cols-[1fr_auto_auto_auto] md:items-end"
+    @submit.prevent="applyFilters"
+  >
+    <AlyvoListFilterField
+      label="Recherche texte"
+      hint="Prenom, nom, entreprise ou poste LinkedIn (contient le texte saisi)"
+    >
+      <UInput
+        v-model="localSearch"
+        icon="i-heroicons-magnifying-glass"
+        placeholder="Ex. Dupont, Alyvo, Directeur commercial"
+        variant="none"
+        :ui="inputUi"
+      />
+    </AlyvoListFilterField>
+
+    <AlyvoListFilterField label="Statut" hint="Etape commerciale du prospect">
+      <USelect
+        v-model="localStatus"
+        :items="statusItems"
+        placeholder="Choisir un statut"
+        variant="none"
+        :ui="selectUi"
+        class="min-w-[220px]"
+      />
+    </AlyvoListFilterField>
+
+    <AlyvoListFilterField label="Favoris" hint="Afficher uniquement les prospects marques en favori">
+      <USelect
+        v-model="localFavorite"
+        :items="favoriteItems"
+        placeholder="Tous ou favoris"
+        variant="none"
+        :ui="selectUi"
+        class="min-w-[200px]"
+      />
+    </AlyvoListFilterField>
+
     <UButton
+      type="submit"
       icon="i-heroicons-funnel"
       label="Filtrer"
-      class="rounded-md bg-[linear-gradient(135deg,#102766_0%,#7446a6_100%)] px-4 py-2 font-semibold text-white shadow-[0_14px_30px_rgba(5,9,23,0.35)] transition hover:bg-[linear-gradient(135deg,#17337c_0%,#9a65d5_100%)]"
-      @click="applyFilters"
+      class="h-11 rounded-md bg-[linear-gradient(135deg,#102766_0%,#7446a6_100%)] px-4 py-2 font-semibold text-white shadow-[0_14px_30px_rgba(5,9,23,0.35)] transition hover:bg-[linear-gradient(135deg,#17337c_0%,#9a65d5_100%)]"
     />
-  </div>
+  </form>
 </template>
 
 <script lang="ts" setup>
@@ -29,6 +52,7 @@ import type { Ref } from 'vue'
 import { buildLinkedinStatusSelectItems } from '#src-core/constants/linkedinSelectableStatuses'
 import type { LinkedinProspectStatus } from '#src-core/types/enums/linkedin.enums'
 import type { ListLinkedinProspectsQuery } from '#src-core/types/payload/linkedin.types'
+import { isFavoriteOnlyFilter } from '#src-core/utils/queryFilters'
 
 /**
  * Evenements du filtre de prospects.
@@ -51,9 +75,11 @@ type SelectItem = {
 }
 
 const allStatusesValue: string = 'all'
+const allFavoritesValue: string = 'all'
 const emit: LinkedinProspectsFiltersEmit = defineEmits<LinkedinProspectsFiltersEmits>()
 const localSearch: Ref<string> = ref('')
 const localStatus: Ref<string | undefined> = ref(undefined)
+const localFavorite: Ref<string> = ref(allFavoritesValue)
 /** Configuration UI de l'input de recherche. */
 type InputUiConfig = { base: string; leadingIcon: string }
 const inputUi: InputUiConfig = {
@@ -93,6 +119,11 @@ const statusItems: SelectItem[] = [
   ),
 ]
 
+const favoriteItems: SelectItem[] = [
+  { label: 'Tous les prospects', value: allFavoritesValue },
+  { label: 'Favoris uniquement', value: 'true' },
+]
+
 /**
  * Emet les filtres actifs.
  * @returns {void}
@@ -104,6 +135,7 @@ const applyFilters: () => void = (): void => {
       localStatus.value && localStatus.value !== allStatusesValue
         ? [localStatus.value as LinkedinProspectStatus]
         : undefined,
+    isFavorite: isFavoriteOnlyFilter(localFavorite.value) ? true : undefined,
     page: 1,
   })
 }

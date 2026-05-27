@@ -1,5 +1,9 @@
 import { HttpClientService } from '#src-core/services/HttpClientService'
 import type {
+  ProspectBulkActionPayload,
+  ProspectBulkActionResponse,
+} from '#src-core/types/payload/prospect-bulk-action.types'
+import type {
   CreateLinkedinProspectPayload,
   ListLinkedinProspectsQuery,
   MarkLinkedinActionPayload,
@@ -109,6 +113,18 @@ export class LinkedinProspectApiService {
    */
   public static async destroy(id: number): Promise<void> {
     await HttpClientService.request<void>(`/linkedin-prospects/${id}`, { method: 'DELETE' })
+  }
+
+  /**
+   * Actions groupées sur une selection de prospects.
+   * @param {ProspectBulkActionPayload} payload - Identifiants et action.
+   * @returns {Promise<ProspectBulkActionResponse>} Nombre de lignes impactees.
+   */
+  public static async bulkAction(payload: ProspectBulkActionPayload): Promise<ProspectBulkActionResponse> {
+    return await HttpClientService.request<ProspectBulkActionResponse>('/linkedin-prospects/bulk-actions', {
+      method: 'POST',
+      body: payload,
+    })
   }
 
   /**

@@ -49,20 +49,13 @@ export const linkedinSelectableStatuses: LinkedinProspectStatus[] = [
 ]
 
 /**
- * Statuts de relance legacy regroupes avec le message 1 dans le kanban.
+ * Statuts de relance automatique calcules cote backend. Affiches comme "Message 1 envoye"
+ * dans le selecteur de statut pour eviter de polluer l'UI avec les etapes intermediaires.
  */
 export const linkedinRelanceOnlyStatuses: LinkedinProspectStatus[] = [
   LinkedinProspectStatus.RELANCE_1_ENVOYEE,
   LinkedinProspectStatus.RELANCE_2_ENVOYEE,
   LinkedinProspectStatus.RELANCE_3_ENVOYEE,
-]
-
-/**
- * Statuts affiches dans la colonne kanban « Message 1 et relances ».
- */
-export const linkedinMessageAndRelanceStatuses: LinkedinProspectStatus[] = [
-  LinkedinProspectStatus.MESSAGE_1_ENVOYE,
-  ...linkedinRelanceOnlyStatuses,
 ]
 
 /**
@@ -84,66 +77,6 @@ export const buildLinkedinStatusSelectItems: () => LinkedinStatusSelectItem[] = 
       value: status,
     }),
   )
-
-/**
- * Definition d'une colonne du pipeline kanban LinkedIn.
- */
-export type LinkedinPipelineColumnDefinition = {
-  title: string
-  description: string
-  statuses: LinkedinProspectStatus[]
-}
-
-const linkedinPipelineColumnDescriptions: Partial<Record<LinkedinProspectStatus, string>> = {
-  [LinkedinProspectStatus.A_INVITER]: 'Demande LinkedIn a envoyer.',
-  [LinkedinProspectStatus.INVITATION_ENVOYEE]: 'En attente d acceptation.',
-  [LinkedinProspectStatus.INVITATION_ACCEPTEE]: 'Acceptation recue.',
-  [LinkedinProspectStatus.NON_REPONDU_LINKEDIN]: 'Aucune reponse apres les 3 relances.',
-  [LinkedinProspectStatus.REPONDU_A_QUALIFIER]: 'Reponse recue a qualifier.',
-  [LinkedinProspectStatus.REPONDU_INTERESSE]: 'Signal positif a convertir.',
-  [LinkedinProspectStatus.REPONDU_NON_INTERESSE]: 'Reponse negative, sans suite commerciale.',
-  [LinkedinProspectStatus.APPEL_DECOUVERTE_FAIT]: 'Suite commerciale a definir.',
-  [LinkedinProspectStatus.APPEL_DE_VENTE_FAIT]: 'Proposition ou decision a suivre.',
-  [LinkedinProspectStatus.PROPOSITION_ENVOYEE]: 'Offre envoyee, attente retour.',
-  [LinkedinProspectStatus.PROPOSITION_ACCEPTEE]: 'Proposition acceptee, chiffre d affaires signe.',
-  [LinkedinProspectStatus.PROPOSITION_REFUSEE]: 'Proposition refusee apres offre.',
-  [LinkedinProspectStatus.ARCHIVE]: 'Hors sequence LinkedIn active.',
-}
-
-/**
- * Colonnes du kanban alignees sur linkedinSelectableStatuses.
- * Seul regroupement autorise : message 1 + relances 1 a 3.
- */
-export const linkedinPipelineColumnDefinitions: LinkedinPipelineColumnDefinition[] = linkedinSelectableStatuses.flatMap(
-  (status: LinkedinProspectStatus): LinkedinPipelineColumnDefinition[] => {
-    if (linkedinRelanceOnlyStatuses.includes(status)) {
-      return []
-    }
-
-    if (status === LinkedinProspectStatus.MESSAGE_1_ENVOYE) {
-      return [
-        {
-          title: 'Message 1 et relances',
-          description: 'Sequence de relances calculee depuis le message 1.',
-          statuses: linkedinMessageAndRelanceStatuses,
-        },
-      ]
-    }
-
-    const title: string =
-      status === LinkedinProspectStatus.NON_REPONDU_LINKEDIN
-        ? NON_REPONDU_LINKEDIN_LABEL
-        : linkedinSelectableStatusLabels[status]
-
-    return [
-      {
-        title,
-        description: linkedinPipelineColumnDescriptions[status] ?? '',
-        statuses: [status],
-      },
-    ]
-  },
-)
 
 /**
  * Couleur Nuxt UI d'un badge de statut.

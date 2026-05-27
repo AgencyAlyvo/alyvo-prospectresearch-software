@@ -18,7 +18,7 @@ import type { StatusBadgeConfig } from '#src-nuxt/app/composables/useStatusBadge
  */
 type StatusBadgeProps = {
   status?: LinkedinProspectStatus | string | null
-  /** Permet le retour a la ligne pour les libelles longs (ex. kanban pipeline). */
+  /** Permet le retour a la ligne pour les libelles longs. */
   wrap?: boolean
 }
 

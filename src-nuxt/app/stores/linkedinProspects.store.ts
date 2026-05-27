@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
 import type { Ref } from 'vue'
+import { shallowRef } from 'vue'
+import { ProspectsCacheService, type LinkedinCallEvent } from '#src-core/services/ProspectsCacheService'
+import { mergeListQueryFilters } from '#src-core/utils/mergeListQueryFilters'
 import { LinkedinProspectApiService } from '#src-core/services/LinkedinProspectApiService'
+import { ProspectBulkAction } from '#src-core/types/enums/prospect-bulk-action.enums'
 import type {
   CreateLinkedinProspectPayload,
   ListLinkedinProspectsQuery,
@@ -26,8 +30,9 @@ type LinkedinProspectsStore = {
   filters: ListLinkedinProspectsQuery
   pagination: PaginationMeta | undefined
   isLoading: boolean
+  isSyncingCache: boolean
+  cacheLoaded: boolean
   fetchList: (query?: ListLinkedinProspectsQuery) => Promise<void>
-  fetchAll: (query?: Omit<ListLinkedinProspectsQuery, 'page' | 'perPage'>) => Promise<void>
   fetchWeekly: (week?: string) => Promise<void>
   fetchOne: (id: number) => Promise<void>
   enrich: (linkedinUrl: string) => Promise<Partial<CreateLinkedinProspectPayload>>
@@ -35,8 +40,12 @@ type LinkedinProspectsStore = {
   update: (id: number, payload: UpdateLinkedinProspectPayload, options?: { refreshCurrent?: boolean }) => Promise<void>
   refresh: (id: number) => Promise<void>
   destroy: (id: number) => Promise<void>
+  bulkAction: (ids: number[], action: ProspectBulkAction) => Promise<number>
   markAction: (id: number, payload: MarkLinkedinActionPayload) => Promise<void>
   setFilters: (query: ListLinkedinProspectsQuery) => void
+  ensureCacheLoaded: (options?: { force?: boolean }) => Promise<void>
+  aggregateCallsByDay: (dateIso: string) => Promise<LinkedinCallEvent[]>
+  aggregateTasksDue: (horizonDays: number) => Promise<LinkedinProspectSummary[]>
 }
 
 /**
@@ -49,8 +58,9 @@ type LinkedinProspectsStoreSetup = {
   filters: Ref<ListLinkedinProspectsQuery>
   pagination: Ref<PaginationMeta | undefined>
   isLoading: Ref<boolean>
+  isSyncingCache: Ref<boolean>
+  cacheLoaded: Ref<boolean>
   fetchList: (query?: ListLinkedinProspectsQuery) => Promise<void>
-  fetchAll: (query?: Omit<ListLinkedinProspectsQuery, 'page' | 'perPage'>) => Promise<void>
   fetchWeekly: (week?: string) => Promise<void>
   fetchOne: (id: number) => Promise<void>
   enrich: (linkedinUrl: string) => Promise<Partial<CreateLinkedinProspectPayload>>
@@ -58,8 +68,12 @@ type LinkedinProspectsStoreSetup = {
   update: (id: number, payload: UpdateLinkedinProspectPayload, options?: { refreshCurrent?: boolean }) => Promise<void>
   refresh: (id: number) => Promise<void>
   destroy: (id: number) => Promise<void>
+  bulkAction: (ids: number[], action: ProspectBulkAction) => Promise<number>
   markAction: (id: number, payload: MarkLinkedinActionPayload) => Promise<void>
   setFilters: (query: ListLinkedinProspectsQuery) => void
+  ensureCacheLoaded: (options?: { force?: boolean }) => Promise<void>
+  aggregateCallsByDay: (dateIso: string) => Promise<LinkedinCallEvent[]>
+  aggregateTasksDue: (horizonDays: number) => Promise<LinkedinProspectSummary[]>
 }
 
 /**
@@ -67,11 +81,13 @@ type LinkedinProspectsStoreSetup = {
  */
 type UseLinkedinProspectsStore = () => LinkedinProspectsStore
 
+const SYNC_PER_PAGE: number = 500
+
 export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
   'linkedinProspects',
   (): LinkedinProspectsStoreSetup => {
-    const prospects: Ref<LinkedinProspectSummary[]> = ref([])
-    const weekly: Ref<LinkedinProspectSummary[]> = ref([])
+    const prospects: Ref<LinkedinProspectSummary[]> = shallowRef([])
+    const weekly: Ref<LinkedinProspectSummary[]> = shallowRef([])
     const current: Ref<LinkedinProspectFull | undefined> = ref(undefined)
     const filters: Ref<ListLinkedinProspectsQuery> = ref({
       page: 1,
@@ -81,9 +97,12 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
     })
     const pagination: Ref<PaginationMeta | undefined> = ref(undefined)
     const isLoading: Ref<boolean> = ref(false)
+    const isSyncingCache: Ref<boolean> = ref(false)
+    const cacheLoaded: Ref<boolean> = ref(false)
+    const fullCacheFallback: Ref<LinkedinProspectSummary[]> = shallowRef([])
 
     /**
-     * Injecte un prospect compact dans les listes locales.
+     * Injecte un prospect compact dans les listes locales et synchronise le cache.
      * @param {LinkedinProspectSummary} prospect - Prospect synchronise.
      * @returns {void}
      */
@@ -99,6 +118,19 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
             (item: LinkedinProspectSummary): LinkedinProspectSummary => (item.id === prospect.id ? prospect : item),
           )
         : weekList
+      if (!ProspectsCacheService.isAvailable()) {
+        const existsIndex: number = fullCacheFallback.value.findIndex(
+          (item: LinkedinProspectSummary): boolean => item.id === prospect.id,
+        )
+        if (existsIndex >= 0) {
+          const next: LinkedinProspectSummary[] = fullCacheFallback.value.slice()
+          next[existsIndex] = prospect
+          fullCacheFallback.value = next
+        } else if (cacheLoaded.value) {
+          fullCacheFallback.value = [prospect, ...fullCacheFallback.value]
+        }
+      }
+      void ProspectsCacheService.linkedinUpsert(prospect)
     }
 
     /**
@@ -107,11 +139,11 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
      * @returns {void}
      */
     const setFilters: (query: ListLinkedinProspectsQuery) => void = (query: ListLinkedinProspectsQuery): void => {
-      filters.value = { ...filters.value, ...query }
+      filters.value = mergeListQueryFilters(filters.value, query)
     }
 
     /**
-     * Charge la liste paginee.
+     * Charge la liste paginee depuis l'API et synchronise le cache.
      * @param {ListLinkedinProspectsQuery | undefined} query - Filtres optionnels.
      * @returns {Promise<void>}
      */
@@ -120,47 +152,85 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
     ): Promise<void> => {
       isLoading.value = true
       try {
-        setFilters(query ?? {})
+        if (query?.week !== undefined) {
+          filters.value = {
+            page: query.page ?? 1,
+            perPage: query.perPage ?? filters.value.perPage ?? 50,
+            sortBy: query.sortBy ?? 'createdAt',
+            sortDir: query.sortDir ?? 'desc',
+            week: query.week,
+          }
+        } else {
+          setFilters(query ?? {})
+        }
         const response: LinkedinProspectListResponse = await LinkedinProspectApiService.list(filters.value)
         prospects.value = response.data
         pagination.value = response.meta
+        if (response.data.length > 0) {
+          void ProspectsCacheService.linkedinUpsertMany(response.data)
+        }
       } finally {
         isLoading.value = false
       }
     }
 
     /**
-     * Charge tous les prospects (paginations cumulees), utile pour le calendrier d'appels.
-     * @param {Omit<ListLinkedinProspectsQuery, 'page' | 'perPage'> | undefined} query - Filtres optionnels (hors pagination).
+     * Charge la totalite des prospects dans le cache natif Rust (paginations en streaming).
+     * Les donnees ne sont PAS gardees en memoire JS pour eviter les crashs de rendu.
+     * En mode navigateur (cache indisponible), fallback : conserve une copie en
+     * memoire JS pour permettre les aggregations en JS.
+     * @param {{ force?: boolean } | undefined} options - Si force=true, recharge meme si deja en cache.
+     * @param {boolean} [options.force] - Force le rechargement complet meme si le cache est deja construit.
      * @returns {Promise<void>}
      */
-    const fetchAll: (query?: Omit<ListLinkedinProspectsQuery, 'page' | 'perPage'>) => Promise<void> = async (
-      query?: Omit<ListLinkedinProspectsQuery, 'page' | 'perPage'>,
-    ): Promise<void> => {
-      isLoading.value = true
+    const ensureCacheLoaded: (options?: { force?: boolean }) => Promise<void> = async (options?: {
+      force?: boolean
+    }): Promise<void> => {
+      if (cacheLoaded.value && !options?.force) return
+      isSyncingCache.value = true
       try {
-        const perPage: number = 200
-        const accumulated: LinkedinProspectSummary[] = []
+        const cacheAvailable: boolean = ProspectsCacheService.isAvailable()
+        if (cacheAvailable) {
+          await ProspectsCacheService.linkedinClear()
+        }
+        fullCacheFallback.value = []
+
         let page: number = 1
         let lastPage: number = 1
-        let meta: PaginationMeta | undefined
-
+        let fetched: number = 0
+        const buffer: LinkedinProspectSummary[] = []
         do {
           const response: LinkedinProspectListResponse = await LinkedinProspectApiService.list({
-            ...(query ?? {}),
             page,
-            perPage,
+            perPage: SYNC_PER_PAGE,
+            sortBy: 'createdAt',
+            sortDir: 'desc',
           })
-          accumulated.push(...response.data)
           lastPage = response.meta.lastPage
-          meta = response.meta
+          if (response.data.length > 0) {
+            fetched += response.data.length
+            buffer.push(...response.data)
+            if (cacheAvailable) {
+              await ProspectsCacheService.linkedinUpsertMany(response.data)
+            }
+          }
           page += 1
         } while (page <= lastPage)
 
-        prospects.value = accumulated
-        pagination.value = meta
+        if (cacheAvailable && fetched > 0) {
+          const cached: number = await ProspectsCacheService.linkedinCount()
+          if (cached === 0) {
+            console.error(
+              `[linkedinProspects.store] cache Rust vide apres sync (${fetched} prospects pousses). Fallback JS active.`,
+            )
+            fullCacheFallback.value = buffer
+          }
+        } else {
+          fullCacheFallback.value = buffer
+        }
+        cacheLoaded.value = true
       } finally {
-        isLoading.value = false
+        isSyncingCache.value = false
       }
     }
 
@@ -181,6 +251,9 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
           items = response.data
         }
         weekly.value = items
+        if (items.length > 0) {
+          void ProspectsCacheService.linkedinUpsertMany(items)
+        }
       } finally {
         isLoading.value = false
       }
@@ -230,7 +303,7 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
      * @param {number} id - Identifiant prospect.
      * @param {UpdateLinkedinProspectPayload} payload - Donnees partielles.
      * @param {{ refreshCurrent?: boolean } | undefined} options - Options de synchronisation locale.
-     * @param {boolean} [options.refreshCurrent] - Met a jour la fiche courante si elle correspond au prospect.
+     * @param {boolean} [options.refreshCurrent] - Met a jour la fiche courante.
      * @returns {Promise<void>}
      */
     const update: (
@@ -271,6 +344,81 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
       await LinkedinProspectApiService.destroy(id)
       prospects.value = prospects.value.filter((item: LinkedinProspectSummary): boolean => item.id !== id)
       weekly.value = weekly.value.filter((item: LinkedinProspectSummary): boolean => item.id !== id)
+      if (!ProspectsCacheService.isAvailable()) {
+        fullCacheFallback.value = fullCacheFallback.value.filter(
+          (item: LinkedinProspectSummary): boolean => item.id !== id,
+        )
+      }
+      void ProspectsCacheService.linkedinRemove(id)
+    }
+
+    /**
+     * Applique une action groupée et synchronise le store local.
+     * @param {number[]} ids - Identifiants cibles.
+     * @param {ProspectBulkAction} action - Action a executer.
+     * @returns {Promise<number>} Nombre de lignes impactees.
+     */
+    const bulkAction: (ids: number[], action: ProspectBulkAction) => Promise<number> = async (
+      ids: number[],
+      action: ProspectBulkAction,
+    ): Promise<number> => {
+      const uniqueIds: number[] = [...new Set(ids)]
+      if (uniqueIds.length === 0) {
+        return 0
+      }
+      const response: { affected: number } = await LinkedinProspectApiService.bulkAction({
+        ids: uniqueIds,
+        action,
+      })
+      const idSet: Set<number> = new Set(uniqueIds)
+
+      if (action === ProspectBulkAction.DELETE) {
+        prospects.value = prospects.value.filter((item: LinkedinProspectSummary): boolean => !idSet.has(item.id))
+        weekly.value = weekly.value.filter((item: LinkedinProspectSummary): boolean => !idSet.has(item.id))
+        if (!ProspectsCacheService.isAvailable()) {
+          fullCacheFallback.value = fullCacheFallback.value.filter(
+            (item: LinkedinProspectSummary): boolean => !idSet.has(item.id),
+          )
+        }
+        for (const id of uniqueIds) {
+          void ProspectsCacheService.linkedinRemove(id)
+        }
+        if (current.value && idSet.has(current.value.id)) {
+          current.value = undefined
+        }
+        return response.affected
+      }
+
+      const isFavorite: boolean = action === ProspectBulkAction.FAVORITE
+      /**
+       * Met a jour le flag favori sur les prospects selectionnes.
+       * @param {LinkedinProspectSummary[]} list - Liste a parcourir.
+       * @returns {LinkedinProspectSummary[]} Liste mise a jour.
+       */
+      const patchList: (list: LinkedinProspectSummary[]) => LinkedinProspectSummary[] = (
+        list: LinkedinProspectSummary[],
+      ): LinkedinProspectSummary[] =>
+        list.map(
+          (item: LinkedinProspectSummary): LinkedinProspectSummary =>
+            idSet.has(item.id) ? { ...item, isFavorite } : item,
+        )
+
+      prospects.value = patchList(prospects.value)
+      weekly.value = patchList(weekly.value)
+      if (!ProspectsCacheService.isAvailable()) {
+        fullCacheFallback.value = patchList(fullCacheFallback.value)
+      } else {
+        const updated: LinkedinProspectSummary[] = prospects.value.filter((item: LinkedinProspectSummary): boolean =>
+          idSet.has(item.id),
+        )
+        if (updated.length > 0) {
+          void ProspectsCacheService.linkedinUpsertMany(updated)
+        }
+      }
+      if (current.value && idSet.has(current.value.id)) {
+        current.value = { ...current.value, isFavorite }
+      }
+      return response.affected
     }
 
     /**
@@ -287,6 +435,75 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
       upsertLocal(response.data)
     }
 
+    /**
+     * Retourne les appels d'un jour (zone Paris) via cache natif.
+     * Fallback JS si cache indisponible.
+     * @param {string} dateIso - YYYY-MM-DD.
+     * @returns {Promise<LinkedinCallEvent[]>} Evenements ordonnes par heure.
+     */
+    const aggregateCallsByDay: (dateIso: string) => Promise<LinkedinCallEvent[]> = async (
+      dateIso: string,
+    ): Promise<LinkedinCallEvent[]> => {
+      if (ProspectsCacheService.isAvailable()) {
+        const cacheResult: LinkedinCallEvent[] = await ProspectsCacheService.linkedinCallsByDay(dateIso)
+        if (cacheResult.length > 0 || fullCacheFallback.value.length === 0) {
+          return cacheResult
+        }
+      }
+      const result: LinkedinCallEvent[] = []
+      for (const prospect of fullCacheFallback.value) {
+        if (prospect.discoveryCallAt?.slice(0, 10) === dateIso) {
+          result.push({
+            prospect,
+            callType: 'discovery',
+            dateIso: prospect.discoveryCallAt,
+            hasTime: prospect.discoveryCallAt.length > 10,
+            timeLabel: prospect.discoveryCallAt.length > 10 ? prospect.discoveryCallAt.slice(11, 16) : '',
+          })
+        }
+        if (prospect.salesCallAt?.slice(0, 10) === dateIso) {
+          result.push({
+            prospect,
+            callType: 'sales',
+            dateIso: prospect.salesCallAt,
+            hasTime: prospect.salesCallAt.length > 10,
+            timeLabel: prospect.salesCallAt.length > 10 ? prospect.salesCallAt.slice(11, 16) : '',
+          })
+        }
+      }
+      return result.sort((a: LinkedinCallEvent, b: LinkedinCallEvent): number => a.dateIso.localeCompare(b.dateIso))
+    }
+
+    /**
+     * Retourne les prospects avec une echeance dans l'horizon.
+     * Fallback JS si cache indisponible.
+     * @param {number} horizonDays - Nombre de jours.
+     * @returns {Promise<LinkedinProspectSummary[]>} Prospects ordonnes par echeance.
+     */
+    const aggregateTasksDue: (horizonDays: number) => Promise<LinkedinProspectSummary[]> = async (
+      horizonDays: number,
+    ): Promise<LinkedinProspectSummary[]> => {
+      const nowIso: string = new Date().toISOString()
+      if (ProspectsCacheService.isAvailable()) {
+        const cacheResult: LinkedinProspectSummary[] = await ProspectsCacheService.linkedinTasksDue(horizonDays, nowIso)
+        if (cacheResult.length > 0 || fullCacheFallback.value.length === 0) {
+          return cacheResult
+        }
+      }
+      const now: number = Date.now()
+      const horizon: number = now + horizonDays * 86_400_000
+      return fullCacheFallback.value
+        .filter((p: LinkedinProspectSummary): boolean => {
+          if (!p.nextActionAt) return false
+          return new Date(p.nextActionAt).getTime() <= horizon
+        })
+        .sort((a: LinkedinProspectSummary, b: LinkedinProspectSummary): number => {
+          const at: number = a.nextActionAt ? new Date(a.nextActionAt).getTime() : Number.MAX_SAFE_INTEGER
+          const bt: number = b.nextActionAt ? new Date(b.nextActionAt).getTime() : Number.MAX_SAFE_INTEGER
+          return at - bt
+        })
+    }
+
     return {
       prospects,
       weekly,
@@ -294,8 +511,9 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
       filters,
       pagination,
       isLoading,
+      isSyncingCache,
+      cacheLoaded,
       fetchList,
-      fetchAll,
       fetchWeekly,
       fetchOne,
       enrich,
@@ -303,8 +521,12 @@ export const useLinkedinProspectsStore: UseLinkedinProspectsStore = defineStore(
       update,
       refresh,
       destroy,
+      bulkAction,
       markAction,
       setFilters,
+      ensureCacheLoaded,
+      aggregateCallsByDay,
+      aggregateTasksDue,
     }
   },
 )

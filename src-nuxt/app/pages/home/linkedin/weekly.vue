@@ -18,26 +18,36 @@
         </div>
       </div>
 
-      <div
-        v-if="prospectsStore.isLoading"
-        class="rounded-lg border border-[#2f3d67] bg-[#0b1433]/70 p-6 text-sm text-[#9ba3bd]"
-      >
-        Chargement...
-      </div>
-
-      <LinkedinProspectsTable v-else-if="weeklyProspects.length > 0" :prospects="weeklyProspects" :loading="false" />
+      <LinkedinProspectsTable
+        v-if="prospectsStore.isLoading || prospectsStore.prospects.length > 0"
+        :prospects="prospectsStore.prospects"
+        :loading="prospectsStore.isLoading"
+      />
 
       <div v-else class="rounded-lg border border-[#2f3d67] bg-[#0b1433]/70 py-16 text-center">
         <UIcon name="i-heroicons-user-group" class="mx-auto mb-3 h-10 w-10 text-[#2f3d67]" />
         <p class="text-sm font-medium text-[#8f9abc]">Aucun prospect ajoute cette semaine</p>
         <p class="mt-1 text-xs text-[#9ba3bd]">Les nouveaux prospects apparaitront ici des leur creation.</p>
       </div>
+
+      <ServerPaginationNav
+        :current-page="currentPage"
+        :total-pages="totalPages"
+        :total="prospectsStore.pagination?.total ?? 0"
+        total-label="prospects sur la semaine"
+        :visible-pages="visiblePages"
+        :page-button-class="pageButtonClass"
+        :active-page-button-class="activePageButtonClass"
+        nav-aria-label="Pagination prospects LinkedIn de la semaine"
+        @change="onPageChange"
+      />
     </section>
   </main>
 </template>
 
 <script lang="ts" setup>
-import type { LinkedinProspectSummary } from '#src-core/types/response/linkedin.types'
+import type { ComputedRef } from 'vue'
+import { useServerPagination } from '#src-nuxt/app/composables/useServerPagination'
 import { useLinkedinProspectsStore } from '#src-nuxt/app/stores/linkedinProspects.store'
 import { useWeeklyObjectiveStore } from '#src-nuxt/app/stores/weeklyObjective.store'
 import { formatIsoWeekDisplayLabel } from '#src-nuxt/app/utils/isoWeekLabel'
@@ -49,12 +59,56 @@ const prospectsStore: ReturnType<typeof useLinkedinProspectsStore> = useLinkedin
 
 const weekLabel: ComputedRef<string> = computed((): string => formatIsoWeekDisplayLabel(objectiveStore.current?.week))
 
-const weeklyProspects: ComputedRef<LinkedinProspectSummary[]> = computed(
-  (): LinkedinProspectSummary[] => prospectsStore.weekly ?? [],
-)
+const weekIso: ComputedRef<string | undefined> = computed((): string | undefined => objectiveStore.current?.week)
+
+const perPage: number = 50
+
+/**
+ * Charge une page des prospects de la semaine.
+ * @param {number} page - Numero de page.
+ * @returns {Promise<void>}
+ */
+const fetchWeeklyPage: (page: number) => Promise<void> = async (page: number): Promise<void> => {
+  if (!weekIso.value) return
+  await prospectsStore.fetchList({
+    week: weekIso.value,
+    page,
+    perPage,
+    sortBy: 'createdAt',
+    sortDir: 'desc',
+  })
+}
+
+/**
+ * Retourne le nombre total de pages hebdomadaires.
+ * @returns {number} Derniere page.
+ */
+const getWeeklyTotalPages: () => number = (): number => prospectsStore.pagination?.lastPage ?? 1
+
+/**
+ * Lit la page courante renvoyee par l'API.
+ * @returns {number | undefined} Page courante.
+ */
+const getWeeklyCurrentPageFromMeta: () => number | undefined = (): number | undefined =>
+  prospectsStore.pagination?.currentPage
+
+const {
+  currentPage,
+  totalPages,
+  visiblePages,
+  pageButtonClass,
+  activePageButtonClass,
+  onPageChange,
+  syncCurrentPageFromMeta,
+} = useServerPagination({
+  perPage,
+  fetchPage: fetchWeeklyPage,
+  getTotalPages: getWeeklyTotalPages,
+  getCurrentPageFromMeta: getWeeklyCurrentPageFromMeta,
+})
 
 const weeklyProspectsCountLabel: ComputedRef<string> = computed((): string => {
-  const count: number = weeklyProspects.value.length
+  const count: number = prospectsStore.pagination?.total ?? 0
   if (count === 0) {
     return 'Aucun prospect pour le moment'
   }
@@ -67,12 +121,20 @@ const weeklyProspectsCountLabel: ComputedRef<string> = computed((): string => {
 })
 
 /**
- * Charge la page semaine.
+ * Charge la page semaine (objectif + liste paginee).
  * @returns {Promise<void>}
  */
 const loadPage: () => Promise<void> = async (): Promise<void> => {
   await objectiveStore.fetchCurrent()
-  await prospectsStore.fetchWeekly(objectiveStore.current?.week)
+  if (!weekIso.value) return
+  await prospectsStore.fetchList({
+    week: weekIso.value,
+    page: 1,
+    perPage,
+    sortBy: 'createdAt',
+    sortDir: 'desc',
+  })
+  syncCurrentPageFromMeta()
 }
 
 onMounted((): void => {

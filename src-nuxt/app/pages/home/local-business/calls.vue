@@ -2,9 +2,9 @@
   <main class="grid gap-6">
     <header class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div>
-        <p class="text-xs font-semibold tracking-[0.2em] text-[#9a65d5] uppercase">LINKEDIN</p>
-        <h1 class="mt-2 text-2xl font-semibold text-white">Rendez-vous appels</h1>
-        <p class="mt-1 text-sm text-[#9ba3bd]">{{ selectedDayLabel }} · {{ formattedDate }}</p>
+        <p class="text-xs font-semibold tracking-[0.2em] text-[#9a65d5] uppercase">BUSINESS LOCAUX</p>
+        <h1 class="mt-2 text-2xl font-semibold text-white">Rendez-vous appels Business</h1>
+        <p class="mt-1 text-sm text-[#9ba3bd]">{{ selectedDayLabel }} - {{ formattedDate }}</p>
       </div>
 
       <div class="flex items-center gap-2">
@@ -13,7 +13,7 @@
           size="sm"
           color="neutral"
           variant="ghost"
-          class="text-[#9ba3bd] hover:bg-[#111c3f] hover:text-white"
+          :class="iconGhostButtonClass"
           aria-label="Jour precedent"
           @click="prevDay"
         />
@@ -31,7 +31,7 @@
           size="sm"
           color="neutral"
           variant="ghost"
-          class="text-[#9ba3bd] hover:bg-[#111c3f] hover:text-white"
+          :class="iconGhostButtonClass"
           aria-label="Jour suivant"
           @click="nextDay"
         />
@@ -71,7 +71,7 @@
         <NuxtLink
           v-for="call in allCalls"
           :key="`${call.prospect.id}-${call.callType}-summary`"
-          :to="`/home/linkedin/${call.prospect.id}`"
+          :to="`/home/local-business/${call.prospect.id}`"
           class="rounded-lg border p-4 transition hover:-translate-y-0.5 hover:border-white/40 hover:bg-white/[0.03]"
           :class="getCallCardClasses(call.callType)"
         >
@@ -84,9 +84,7 @@
             </div>
             <div class="min-w-0 flex-1">
               <div class="flex items-center justify-between gap-3">
-                <p class="truncate text-sm font-semibold text-white">
-                  {{ call.prospect.firstName }} {{ call.prospect.lastName }}
-                </p>
+                <p class="truncate text-sm font-semibold text-white">{{ call.prospect.name }}</p>
                 <span class="shrink-0 text-xs font-semibold text-[#c7d0ea]">
                   {{ call.timeLabel || 'Journee' }}
                 </span>
@@ -108,20 +106,22 @@
 
 <script lang="ts" setup>
 import type { ComputedRef, Ref } from 'vue'
-import type { LinkedinCallEvent } from '#src-core/services/ProspectsCacheService'
-import { useLinkedinProspectsStore } from '#src-nuxt/app/stores/linkedinProspects.store'
+import type { LocalBusinessCallEvent } from '#src-core/services/ProspectsCacheService'
+import { useAlyvoDarkUi } from '#src-nuxt/app/composables/useAlyvoDarkUi'
+import { useLocalBusinessProspectsStore } from '#src-nuxt/app/stores/localBusinessProspects.store'
 import { PARIS_TIME_ZONE, getParisDateParts, isSameDayInParis } from '#src-nuxt/app/utils/parisTime'
 
 definePageMeta({ layout: 'home' })
 
 /**
- * Type d'appel affiche dans l'agenda.
+ * Type d'appel.
  */
 type CallType = 'discovery' | 'sales'
 
-const store: ReturnType<typeof useLinkedinProspectsStore> = useLinkedinProspectsStore()
+const store: ReturnType<typeof useLocalBusinessProspectsStore> = useLocalBusinessProspectsStore()
+const { iconGhostButtonClass } = useAlyvoDarkUi()
 const selectedDate: Ref<Date> = ref(new Date())
-const allCalls: Ref<LinkedinCallEvent[]> = ref([])
+const allCalls: Ref<LocalBusinessCallEvent[]> = ref([])
 
 /**
  * Verifie si deux dates correspondent au meme jour calendaire en fuseau Paris.
@@ -132,7 +132,7 @@ const allCalls: Ref<LinkedinCallEvent[]> = ref([])
 const isSameDay: (a: Date, b: Date) => boolean = (a: Date, b: Date): boolean => isSameDayInParis(a, b)
 
 /**
- * Calcule l'ecart en jours (jour calendaire Paris) entre la date selectionnee et aujourd'hui.
+ * Calcule l'ecart en jours.
  * @param {Date} date - Date selectionnee.
  * @returns {number} Ecart en jours.
  */
@@ -180,22 +180,21 @@ const selectedDayLabel: ComputedRef<string> = computed((): string => {
 })
 
 const selectedDayLabelLower: ComputedRef<string> = computed((): string => selectedDayLabel.value.toLowerCase())
-
 const todayButtonLabel: ComputedRef<string> = computed((): string =>
   isTodaySelected.value ? "Aujourd'hui" : "Retour aujourd'hui",
 )
 
 const discoveryCallsCount: ComputedRef<number> = computed(
-  (): number => allCalls.value.filter((c: LinkedinCallEvent): boolean => c.callType === 'discovery').length,
+  (): number => allCalls.value.filter((c: LocalBusinessCallEvent): boolean => c.callType === 'discovery').length,
 )
 const salesCallsCount: ComputedRef<number> = computed(
-  (): number => allCalls.value.filter((c: LinkedinCallEvent): boolean => c.callType === 'sales').length,
+  (): number => allCalls.value.filter((c: LocalBusinessCallEvent): boolean => c.callType === 'sales').length,
 )
 
 const isBusy: ComputedRef<boolean> = computed((): boolean => store.isSyncingCache || store.isLoading)
 
 /**
- * Recharge la liste des appels du jour selectionne.
+ * Recharge les appels du jour selectionne.
  * @returns {Promise<void>}
  */
 const refreshCalls: () => Promise<void> = async (): Promise<void> => {
@@ -210,7 +209,7 @@ watch(selectedDate, (): void => {
 /**
  * Retourne le libelle d'un type d'appel.
  * @param {CallType} type - Type d'appel.
- * @returns {string} Libelle a afficher.
+ * @returns {string} Libelle.
  */
 const getCallTypeLabel: (type: CallType) => string = (type: CallType): string =>
   type === 'discovery' ? 'Appel decouverte' : 'Appel de vente'
@@ -224,7 +223,7 @@ const getCallIcon: (type: CallType) => string = (type: CallType): string =>
   type === 'discovery' ? 'i-heroicons-phone' : 'i-heroicons-currency-euro'
 
 /**
- * Retourne les classes de carte.
+ * Classes de la carte.
  * @param {CallType} type - Type d'appel.
  * @returns {string} Classes CSS.
  */
@@ -232,7 +231,7 @@ const getCallCardClasses: (type: CallType) => string = (type: CallType): string 
   type === 'discovery' ? 'border-sky-500/40 bg-sky-500/10' : 'border-[#9a65d5]/40 bg-[#9a65d5]/10'
 
 /**
- * Retourne les classes du bloc icone.
+ * Classes du bloc icone.
  * @param {CallType} type - Type d'appel.
  * @returns {string} Classes CSS.
  */
@@ -240,7 +239,7 @@ const getCallIconBoxClasses: (type: CallType) => string = (type: CallType): stri
   type === 'discovery' ? 'bg-sky-500/20' : 'bg-[#9a65d5]/20'
 
 /**
- * Retourne les classes de l'icone.
+ * Classes de l'icone.
  * @param {CallType} type - Type d'appel.
  * @returns {string} Classes CSS.
  */
@@ -248,7 +247,7 @@ const getCallIconClasses: (type: CallType) => string = (type: CallType): string 
   type === 'discovery' ? 'text-sky-400' : 'text-[#c7a8f2]'
 
 /**
- * Retourne les classes du libelle.
+ * Classes du libelle.
  * @param {CallType} type - Type d'appel.
  * @returns {string} Classes CSS.
  */
@@ -256,18 +255,14 @@ const getCallTextClasses: (type: CallType) => string = (type: CallType): string 
   type === 'discovery' ? 'text-sky-300' : 'text-[#c7a8f2]'
 
 /**
- * Construit la ligne de contexte d'un prospect.
- * @param {LinkedinCallEvent['prospect']} prospect - Prospect.
- * @returns {string} Contexte poste et entreprise.
+ * Construit la ligne de contexte d'un business local.
+ * @param {LocalBusinessCallEvent['prospect']} prospect - Prospect.
+ * @returns {string} Contexte categorie et sous-categorie.
  */
-const getProspectSubtitle: (prospect: LinkedinCallEvent['prospect']) => string = (
-  prospect: LinkedinCallEvent['prospect'],
-): string => {
-  const parts: string[] = [prospect.position, prospect.company].filter((part: string | null): part is string =>
-    Boolean(part),
-  )
-  return parts.length > 0 ? parts.join(' · ') : 'Informations prospect a completer'
-}
+const getProspectSubtitle: (prospect: LocalBusinessCallEvent['prospect']) => string = (
+  prospect: LocalBusinessCallEvent['prospect'],
+): string =>
+  [prospect.subcategory, prospect.category].filter(Boolean).join(' - ') || 'Informations business a completer'
 
 /**
  * Navigue vers la date du jour.

@@ -49,7 +49,9 @@ export type UpdateLinkedinProspectCommercialFields = {
  * Payload de mise a jour partielle d'un prospect LinkedIn.
  */
 export type UpdateLinkedinProspectPayload = Partial<CreateLinkedinProspectPayload> &
-  UpdateLinkedinProspectCommercialFields
+  UpdateLinkedinProspectCommercialFields & {
+    isFavorite?: boolean
+  }
 
 /**
  * Filtres du listing de prospects LinkedIn.
@@ -59,6 +61,7 @@ export type ListLinkedinProspectsQuery = {
   perPage?: number
   search?: string
   status?: LinkedinProspectStatus[]
+  isFavorite?: boolean
   week?: string
   sortBy?: 'createdAt' | 'nextActionAt' | 'invitationSentAt' | 'lastName'
   sortDir?: 'asc' | 'desc'

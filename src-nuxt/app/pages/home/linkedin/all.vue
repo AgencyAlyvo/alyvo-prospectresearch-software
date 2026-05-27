@@ -4,6 +4,7 @@
       <div>
         <p class="text-xs font-semibold tracking-[0.2em] text-[#9a65d5] uppercase">LINKEDIN</p>
         <h1 class="mt-2 text-2xl font-semibold text-white">Tous les prospects Linkedin</h1>
+        <p class="mt-1 text-sm text-[#9ba3bd]">{{ store.pagination?.total ?? 0 }} prospects dans ta base.</p>
       </div>
       <UButton
         label="Ajouter un prospect"
@@ -15,6 +16,18 @@
 
     <LinkedinProspectsFilters @submit="fetchWithFilters" />
     <LinkedinProspectsTable :prospects="store.prospects" :loading="store.isLoading" />
+
+    <ServerPaginationNav
+      :current-page="currentPage"
+      :total-pages="totalPages"
+      :total="store.pagination?.total ?? 0"
+      total-label="prospects au total"
+      :visible-pages="visiblePages"
+      :page-button-class="pageButtonClass"
+      :active-page-button-class="activePageButtonClass"
+      nav-aria-label="Pagination prospects LinkedIn"
+      @change="onPageChange"
+    />
 
     <UModal
       v-model:open="isCreateOpen"
@@ -39,8 +52,9 @@
 
 <script lang="ts" setup>
 import type { Ref } from 'vue'
-import { useLinkedinProspectsStore } from '#src-nuxt/app/stores/linkedinProspects.store'
 import type { ListLinkedinProspectsQuery } from '#src-core/types/payload/linkedin.types'
+import { useServerPagination } from '#src-nuxt/app/composables/useServerPagination'
+import { useLinkedinProspectsStore } from '#src-nuxt/app/stores/linkedinProspects.store'
 
 definePageMeta({ layout: 'home' })
 
@@ -48,15 +62,56 @@ const store: ReturnType<typeof useLinkedinProspectsStore> = useLinkedinProspects
 const toast: ReturnType<typeof useToast> = useToast()
 const isCreateOpen: Ref<boolean> = ref(false)
 
+const perPage: number = 50
+
 /**
- * Charge la liste avec filtres.
+ * Charge une page de la liste LinkedIn.
+ * @param {number} page - Numero de page.
+ * @returns {Promise<void>}
+ */
+const fetchLinkedinPage: (page: number) => Promise<void> = async (page: number): Promise<void> => {
+  await store.fetchList({ ...store.filters, page, perPage })
+}
+
+/**
+ * Retourne le nombre total de pages.
+ * @returns {number} Derniere page.
+ */
+const getLinkedinTotalPages: () => number = (): number => store.pagination?.lastPage ?? 1
+
+/**
+ * Lit la page courante renvoyee par l'API.
+ * @returns {number | undefined} Page courante.
+ */
+const getLinkedinCurrentPageFromMeta: () => number | undefined = (): number | undefined => store.pagination?.currentPage
+
+const {
+  currentPage,
+  totalPages,
+  visiblePages,
+  pageButtonClass,
+  activePageButtonClass,
+  onPageChange,
+  resetToFirstPage,
+  syncCurrentPageFromMeta,
+} = useServerPagination({
+  perPage,
+  fetchPage: fetchLinkedinPage,
+  getTotalPages: getLinkedinTotalPages,
+  getCurrentPageFromMeta: getLinkedinCurrentPageFromMeta,
+})
+
+/**
+ * Charge la liste avec filtres (retour page 1).
  * @param {ListLinkedinProspectsQuery} query - Filtres a appliquer.
  * @returns {Promise<void>}
  */
 const fetchWithFilters: (query: ListLinkedinProspectsQuery) => Promise<void> = async (
   query: ListLinkedinProspectsQuery,
 ): Promise<void> => {
-  await store.fetchList(query)
+  resetToFirstPage()
+  await store.fetchList({ ...query, page: 1, perPage })
+  syncCurrentPageFromMeta()
 }
 
 /**
@@ -65,7 +120,9 @@ const fetchWithFilters: (query: ListLinkedinProspectsQuery) => Promise<void> = a
  */
 const handleCreated: () => Promise<void> = async (): Promise<void> => {
   isCreateOpen.value = false
-  await store.fetchList()
+  resetToFirstPage()
+  await store.fetchList({ ...store.filters, page: 1, perPage })
+  syncCurrentPageFromMeta()
   toast.add({
     title: 'Prospect ajouté',
     description: 'Le nouveau prospect a été ajouté à votre liste.',
@@ -74,7 +131,8 @@ const handleCreated: () => Promise<void> = async (): Promise<void> => {
   })
 }
 
-onMounted((): void => {
-  void store.fetchList()
+onMounted(async (): Promise<void> => {
+  await store.fetchList({ page: 1, perPage })
+  syncCurrentPageFromMeta()
 })
 </script>

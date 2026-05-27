@@ -1,10 +1,11 @@
 import { isTauri } from '@tauri-apps/api/core'
 import { isPermissionGranted, requestPermission, sendNotification } from '@tauri-apps/plugin-notification'
 import { watch } from 'vue'
-import { LinkedinProspectApiService } from '#src-core/services/LinkedinProspectApiService'
-import type { LinkedinProspectListResponse, LinkedinProspectSummary } from '#src-core/types/response/linkedin.types'
+import { ProspectsCacheService, type LinkedinCallEvent } from '#src-core/services/ProspectsCacheService'
+import type { LinkedinProspectSummary } from '#src-core/types/response/linkedin.types'
 import { useAuthStore } from '#src-nuxt/app/stores/auth.store'
-import { PARIS_TIME_ZONE, parseIsoAsParisDate } from '#src-nuxt/app/utils/parisTime'
+import { useLinkedinProspectsStore } from '#src-nuxt/app/stores/linkedinProspects.store'
+import { PARIS_TIME_ZONE, getParisDateParts, parseIsoAsParisDate } from '#src-nuxt/app/utils/parisTime'
 
 /**
  * Type de rendez-vous surveille.
@@ -120,66 +121,61 @@ const getProspectContext: (prospect: LinkedinProspectSummary) => string = (
 }
 
 /**
- * Charge tous les prospects LinkedIn pour surveiller leurs rendez-vous.
- * @returns {Promise<LinkedinProspectSummary[]>} Prospects charges.
+ * Construit la cle date YYYY-MM-DD en fuseau Paris.
+ * @param {Date} date - Date.
+ * @returns {string} YYYY-MM-DD.
  */
-const fetchAllProspects: () => Promise<LinkedinProspectSummary[]> = async (): Promise<LinkedinProspectSummary[]> => {
-  const perPage: number = 200
-  const result: LinkedinProspectSummary[] = []
-  let page: number = 1
-  let lastPage: number = 1
-
-  do {
-    const response: LinkedinProspectListResponse = await LinkedinProspectApiService.list({
-      page,
-      perPage,
-      sortBy: 'createdAt',
-      sortDir: 'desc',
-    })
-    result.push(...response.data)
-    lastPage = response.meta.lastPage
-    page += 1
-  } while (page <= lastPage)
-
-  return result
+const toParisDateKey: (date: Date) => string = (date: Date): string => {
+  const parts: { year: number; month: number; day: number } = getParisDateParts(date)
+  return `${parts.year}-${String(parts.month).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`
 }
 
 /**
- * Retourne les rendez-vous dont l'heure (fuseau Paris) est atteinte dans la fenetre de tolerance.
- * @param {LinkedinProspectSummary[]} prospects - Prospects LinkedIn.
+ * Recupere les appels d'aujourd'hui via le cache natif Rust (Rayon).
+ * @param {Date} now - Instant courant.
+ * @returns {Promise<LinkedinCallEvent[]>} Evenements du jour.
+ */
+const fetchTodayCallsFromCache: (now: Date) => Promise<LinkedinCallEvent[]> = async (
+  now: Date,
+): Promise<LinkedinCallEvent[]> => {
+  const store: ReturnType<typeof useLinkedinProspectsStore> = useLinkedinProspectsStore()
+  if (!store.cacheLoaded) {
+    await store.ensureCacheLoaded()
+  }
+  if (ProspectsCacheService.isAvailable()) {
+    return await ProspectsCacheService.linkedinCallsByDay(toParisDateKey(now))
+  }
+  return await store.aggregateCallsByDay(toParisDateKey(now))
+}
+
+/**
+ * Filtre les appels du jour selon la fenetre de tolerance.
+ * @param {LinkedinCallEvent[]} events - Appels du jour.
  * @param {Date} now - Date courante.
  * @returns {CallNotification[]} Rendez-vous a notifier.
  */
-const getDueCalls: (prospects: LinkedinProspectSummary[], now: Date) => CallNotification[] = (
-  prospects: LinkedinProspectSummary[],
+const getDueCalls: (events: LinkedinCallEvent[], now: Date) => CallNotification[] = (
+  events: LinkedinCallEvent[],
   now: Date,
 ): CallNotification[] => {
   const dueCalls: CallNotification[] = []
   const nowMs: number = now.getTime()
 
-  for (const prospect of prospects) {
-    const entries: { type: CallType; iso: string | null }[] = [
-      { type: 'discovery', iso: prospect.discoveryCallAt },
-      { type: 'sales', iso: prospect.salesCallAt },
-    ]
+  for (const event of events) {
+    if (!event.hasTime || !hasTimeComponent(event.dateIso)) continue
+    const date: Date | null = parseIsoAsParisDate(event.dateIso)
+    if (!date) continue
 
-    for (const entry of entries) {
-      if (!entry.iso || !hasTimeComponent(entry.iso)) continue
+    const diff: number = nowMs - date.getTime()
+    if (diff < 0 || diff >= DUE_GRACE_MS) continue
 
-      const date: Date | null = parseIsoAsParisDate(entry.iso)
-      if (!date) continue
-
-      const diff: number = nowMs - date.getTime()
-      if (diff < 0 || diff >= DUE_GRACE_MS) continue
-
-      const minuteKey: string = formatParisMinuteKey(date)
-      dueCalls.push({
-        type: entry.type,
-        prospect,
-        key: `${minuteKey}:${entry.type}:${prospect.id}`,
-        timeLabel: minuteKey.slice(11, 16),
-      })
-    }
+    const minuteKey: string = formatParisMinuteKey(date)
+    dueCalls.push({
+      type: event.callType,
+      prospect: event.prospect,
+      key: `${minuteKey}:${event.callType}:${event.prospect.id}`,
+      timeLabel: minuteKey.slice(11, 16),
+    })
   }
 
   return dueCalls
@@ -235,8 +231,9 @@ export default defineNuxtPlugin((): void => {
 
     isChecking = true
     try {
-      const prospects: LinkedinProspectSummary[] = await fetchAllProspects()
-      await notifyDueCalls(getDueCalls(prospects, new Date()))
+      const now: Date = new Date()
+      const events: LinkedinCallEvent[] = await fetchTodayCallsFromCache(now)
+      await notifyDueCalls(getDueCalls(events, now))
     } catch (error: unknown) {
       console.warn('LinkedIn call notification check failed:', error)
     } finally {
