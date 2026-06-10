@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "web:run:dev:spa": "nuxi dev src-nuxt --dotenv .env.development --port=1470",
-    "web:run:staging:spa": "nuxi dev src-nuxt --dotenv .env.staging --port=1470",
-    "web:run:prod:spa": "nuxi dev src-nuxt --dotenv .env.production --port=1470",
+    "web:run:dev:spa": "nuxi dev src-nuxt --dotenv .env.development --port=1471",
+    "web:run:staging:spa": "nuxi dev src-nuxt --dotenv .env.staging --port=1471",
+    "web:run:prod:spa": "nuxi dev src-nuxt --dotenv .env.production --port=1471",
     "web:build:static:dev": "nuxi generate src-nuxt --dotenv .env.development",
     "web:build:static:staging": "nuxi generate src-nuxt --dotenv .env.staging",
     "web:build:static:prod": "nuxi generate src-nuxt --dotenv .env.production",

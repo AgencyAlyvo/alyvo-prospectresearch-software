@@ -6,7 +6,7 @@
   "identifier": "fr.alyvo.prospectresearch",
   "build": {
     "frontendDist": "../src-nuxt/.output/public/",
-    "devUrl": "http://localhost:1470",
+    "devUrl": "http://localhost:1471",
     "beforeDevCommand": "tsx src-tauri/scripts/beforeDevCommand.ts",
     "beforeBuildCommand": "tsx src-tauri/scripts/beforeBuildCommand.ts"
   },
