@@ -61,7 +61,7 @@ export const useAlyvoDarkUi: () => AlyvoDarkUi = (): AlyvoDarkUi => {
     placeholder: 'truncate text-[#626d90]',
     trailingIcon: 'text-[#9ba3bd]',
     content:
-      'max-h-60 w-(--reka-select-trigger-width) rounded-md border border-[#2f3d67] bg-[#071022] shadow-[0_18px_48px_rgba(0,0,0,0.35)] ring-0 origin-(--reka-select-content-transform-origin)',
+      'z-[3000] max-h-60 min-w-[200px] w-(--reka-select-trigger-width) rounded-md border border-[#2f3d67] bg-[#071022] shadow-[0_18px_48px_rgba(0,0,0,0.35)] ring-0 origin-(--reka-select-content-transform-origin) pointer-events-auto',
     viewport: 'relative divide-y divide-[#152247] scroll-py-1 overflow-y-auto flex-1',
     item: 'group relative flex w-full items-start gap-1.5 rounded-md p-1.5 text-sm !text-[#c7d0ea] outline-none transition-colors hover:bg-[#111c3f] hover:!text-white data-[highlighted]:bg-[#111c3f] data-[highlighted]:!text-white data-[state=checked]:bg-[#16234f] data-[state=checked]:!text-white',
     itemWrapper: 'min-w-0 flex-1 !text-current',

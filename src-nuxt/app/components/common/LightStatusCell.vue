@@ -13,9 +13,11 @@
     </button>
     <Teleport v-if="open" to="body">
       <div
+        ref="panelRef"
         :style="floatStyle"
         class="fixed z-[2000] max-h-60 min-w-[200px] overflow-y-auto rounded-md border border-[#2f3d67] bg-[#071022] py-1 shadow-[0_18px_48px_rgba(0,0,0,0.35)]"
         role="listbox"
+        @mousedown.stop
         @click.stop
       >
         <button
@@ -41,6 +43,7 @@
 
 <script lang="ts" setup generic="T extends string">
 import type { Ref } from 'vue'
+import { shouldCloseLightStatusPanel } from '#src-core/utils/lightStatusCellClickOutside'
 
 /**
  * Item de selection.
@@ -69,6 +72,7 @@ const props: LightStatusCellProps = defineProps<LightStatusCellProps>()
 const emit: (event: 'update:modelValue', value: T) => void = defineEmits<LightStatusCellEmits>()
 
 const rootRef: Ref<HTMLDivElement | null> = ref(null)
+const panelRef: Ref<HTMLDivElement | null> = ref(null)
 const open: Ref<boolean> = ref(false)
 const floatStyle: Ref<Record<string, string>> = ref({})
 
@@ -111,10 +115,8 @@ const close: () => void = (): void => {
  * @returns {void}
  */
 const onDocumentClick: (event: Event) => void = (event: Event): void => {
-  const root: HTMLDivElement | null = rootRef.value
-  if (!root) return
   const target: Node | null = event.target as Node | null
-  if (target && root.contains(target)) return
+  if (!shouldCloseLightStatusPanel(rootRef.value, panelRef.value, target)) return
   close()
 }
 

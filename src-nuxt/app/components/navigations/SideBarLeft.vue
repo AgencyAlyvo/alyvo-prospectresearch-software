@@ -10,7 +10,7 @@
   >
     <nav class="flex h-full w-full flex-col">
       <div class="flex h-full w-full flex-col items-center justify-between gap-6">
-        <!-- Sections principales (LinkedIn puis Business Locaux). -->
+        <!-- Section principale LinkedIn. -->
         <div class="grid w-full gap-5">
           <div v-for="section in sections" :key="section.title" class="grid w-full gap-1">
             <h3 class="px-3 pb-1 text-[10px] font-bold tracking-wider text-[#6b7591] uppercase">
@@ -73,7 +73,7 @@ type NavSection = {
   links: NavLink[]
 }
 
-// Deux sections distinctes : LinkedIn (existant) puis Business Locaux (nouveau module OSM).
+// Section LinkedIn.
 const sections: NavSection[] = [
   {
     title: 'LinkedIn',
@@ -84,36 +84,6 @@ const sections: NavSection[] = [
       { name: 'Rendez-vous appels LinkedIn', icon: 'i-heroicons-phone', to: '/home/linkedin/calls' },
       { name: 'Relances LinkedIn', icon: 'i-heroicons-bell', to: '/home/tasks' },
       { name: 'Parametres LinkedIn', icon: 'i-heroicons-cog-6-tooth', to: '/home/settings' },
-    ],
-  },
-  {
-    title: 'Business Locaux',
-    links: [
-      {
-        name: 'Tableau de bord Business',
-        icon: 'i-heroicons-squares-2x2',
-        to: '/home/local-business',
-      },
-      {
-        name: 'Tous les business locaux',
-        icon: 'i-heroicons-building-storefront',
-        to: '/home/local-business/all',
-      },
-      {
-        name: 'Rendez-vous appels Business',
-        icon: 'i-heroicons-phone',
-        to: '/home/local-business/calls',
-      },
-      {
-        name: 'Import depuis OSM',
-        icon: 'i-heroicons-map-pin',
-        to: '/home/local-business/import',
-      },
-      {
-        name: 'Relances Business Locaux',
-        icon: 'i-heroicons-bell',
-        to: '/home/local-business/tasks',
-      },
     ],
   },
 ]
@@ -129,7 +99,7 @@ const bottomLinks: NavLink[] = []
 const isActive: (to: string) => boolean = (to: string): boolean => {
   const path: string = useRoute().path
 
-  if (to === '/home' || to === '/home/local-business') {
+  if (to === '/home') {
     return path === to
   }
 

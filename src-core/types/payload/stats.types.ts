@@ -7,14 +7,6 @@ export type LinkedinStatsQuery = {
 }
 
 /**
- * Filtre de periode pour les statistiques business locaux.
- */
-export type LocalBusinessStatsQuery = {
-  from?: string
-  to?: string
-}
-
-/**
  * Periode selectionnee dans le tableau de bord LinkedIn.
  */
 export type DashboardDateRange = {

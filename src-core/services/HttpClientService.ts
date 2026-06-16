@@ -83,6 +83,29 @@ export class HttpClientService {
         ...(authStore.authToken ? { Authorization: `Bearer ${authStore.authToken}` } : {}),
         ...options.headers,
       },
+    }).catch((error: unknown) => {
+      throw HttpClientService.normalizeError(error)
     })
+  }
+
+  /**
+   * Normalise une erreur API en Error avec le message backend si disponible.
+   * @param {unknown} error - Erreur brute de $fetch.
+   * @returns {Error} Erreur normalisee.
+   */
+  private static normalizeError(error: unknown): Error {
+    if (error && typeof error === 'object') {
+      const fetchError: { data?: { message?: string }; message?: string; statusMessage?: string } = error as {
+        data?: { message?: string }
+        message?: string
+        statusMessage?: string
+      }
+      const message: string | undefined =
+        fetchError.data?.message ?? fetchError.statusMessage ?? fetchError.message
+      if (message) {
+        return new Error(message)
+      }
+    }
+    return error instanceof Error ? error : new Error('Request failed')
   }
 }

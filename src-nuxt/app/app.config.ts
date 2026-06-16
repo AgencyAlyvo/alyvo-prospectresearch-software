@@ -1,5 +1,11 @@
 export default defineAppConfig({
   ui: {
+    select: {
+      slots: {
+        content:
+          'z-[3000] min-w-[200px] pointer-events-auto max-h-60 w-(--reka-select-trigger-width) bg-default shadow-lg rounded-md ring ring-default overflow-hidden origin-(--reka-select-content-transform-origin) flex flex-col',
+      },
+    },
     toast: {
       slots: {
         root: 'bg-[#071022] ring-0 border border-[#2f3d67] shadow-[0_20px_60px_rgba(0,0,0,0.6)] rounded-lg',

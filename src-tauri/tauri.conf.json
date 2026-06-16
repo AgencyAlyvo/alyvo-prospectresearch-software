@@ -34,6 +34,9 @@
         "connect-src": [
           "ipc:",
           "http://ipc.localhost",
+          "http://localhost:3501",
+          "http://127.0.0.1:3501",
+          "https://n8n.alyvo.fr",
           "https://staging.api.prospectresearch.alyvo.fr",
           "https://api.prospectresearch.alyvo.fr",
           "https://s3.gra.io.cloud.ovh.net",
