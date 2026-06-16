@@ -100,8 +100,7 @@ const favoriteItems: SelectItem[] = [
 const applyFilters: () => void = (): void => {
   emit('submit', {
     search: localSearch.value || undefined,
-    status:
-      localStatus.value !== allStatusesValue ? [localStatus.value as LinkedinProspectStatus] : undefined,
+    status: localStatus.value !== allStatusesValue ? [localStatus.value as LinkedinProspectStatus] : undefined,
     isFavorite: isFavoriteOnlyFilter(localFavorite.value) ? true : undefined,
     page: 1,
   })

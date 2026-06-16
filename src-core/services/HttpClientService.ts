@@ -100,8 +100,7 @@ export class HttpClientService {
         message?: string
         statusMessage?: string
       }
-      const message: string | undefined =
-        fetchError.data?.message ?? fetchError.statusMessage ?? fetchError.message
+      const message: string | undefined = fetchError.data?.message ?? fetchError.statusMessage ?? fetchError.message
       if (message) {
         return new Error(message)
       }

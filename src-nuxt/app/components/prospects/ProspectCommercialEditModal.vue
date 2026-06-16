@@ -269,9 +269,16 @@ type SelectUiConfig = {
   itemLabel: string
   itemTrailingIcon: string
 }
-const selectContentProps = {
-  position: 'popper' as const,
-  side: 'bottom' as const,
+/** Props du contenu du select de statut (position popper). */
+type SelectContentProps = {
+  position: 'popper'
+  side: 'bottom'
+  sideOffset: number
+  collisionPadding: number
+}
+const selectContentProps: SelectContentProps = {
+  position: 'popper',
+  side: 'bottom',
   sideOffset: 8,
   collisionPadding: 8,
 }
