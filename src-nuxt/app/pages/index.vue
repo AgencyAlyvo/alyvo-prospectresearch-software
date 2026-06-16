@@ -111,7 +111,7 @@ const updateDownloadProgressPercentage: (progressPercentage: number) => void = (
  * @returns {Promise<void>}
  */
 const autoUpdateApplication: () => Promise<void> = async (): Promise<void> => {
-  if (appEnv === 'development') {
+  if (appEnv === 'production') {
     updateStatus.value = 'Development mode.'
     await goToLogin()
     return
